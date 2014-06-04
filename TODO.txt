@@ -1,0 +1,40 @@
+TODO LIST
+=========
+
+1. armazenar no PG a estrutura no formato XYT[Q] (text, bytea, xyt=>formato_novo):
+---------------------
+45 62 5 72
+56 280 118 17
+73 71 95 78
+75 206 5 81
+96 226 84 79
+100 142 174 80
+100 184 84 73
+138 54 0 37
+150 23 90 6
+155 207 157 76
+161 90 168 40
+176 180 163 73
+203 151 168 6
+204 291 62 5
+208 234 62 17
+209 23 107 6
+214 221 67 16
+215 203 78 15
+216 154 11 6
+216 227 28 16
+218 275 39 16
+219 167 95 15
+220 241 28 15
+228 98 22 13
+236 136 112 34
+256 276 112 65
+---------------------
+
+2. criar função nativa em C para fazer comparação entre dois templates
+
+SELECT match_score(xyt, 'xyt-de-prova'::xyt), id_digital, id_pessoa
+FROM digitais
+WHERE classe_digital(xyt) = 'ANGULAR'
+ORDER BY 1 DESC;
+
