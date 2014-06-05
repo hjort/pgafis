@@ -1,7 +1,14 @@
 TODO LIST
 =========
 
-1. armazenar no PG a estrutura no formato XYT[Q] (text, bytea, xyt=>formato_novo):
+OK - gerar programa usando a biblioteca com algoritmo matcher (lab/bz)
+- criar e popular tabelas no PG para armazenar conteúdo dos arquivos XYT (samples/xyt)
+- criar módulo do PG em C para ler dados de campo "text" - ex: qtd_linhas(text):int, qtd_espacos(text):int
+
+
+- usar inicialmente o tipo de dados "text" do PG
+#- armazenar no PG a estrutura no formato XYT[Q] (text, bytea, xyt=>formato_novo):
+
 ---------------------
 45 62 5 72
 56 280 118 17
@@ -31,7 +38,7 @@ TODO LIST
 256 276 112 65
 ---------------------
 
-2. criar função nativa em C para fazer comparação entre dois templates
+- criar função nativa em C para fazer comparação entre dois templates
 
 SELECT match_score(xyt, 'xyt-de-prova'::xyt), id_digital, id_pessoa
 FROM digitais
