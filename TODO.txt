@@ -3,7 +3,7 @@ TODO LIST
 
 OK - gerar programa usando a biblioteca com algoritmo matcher (lab/bz)
 OK - criar e popular tabelas no PG para armazenar conteúdo dos arquivos XYT (samples/xyt)
-- criar módulo do PG em C para ler dados de campo "text" - ex: qtd_linhas(text):int, qtd_espacos(text):int
+OK - criar módulo do PG em C para ler dados de campo "text" - ex: qtd_linhas(text):int, qtd_espacos(text):int
 
 
 - usar inicialmente o tipo de dados "text" do PG
