@@ -1,0 +1,5 @@
+# wc extension
+comment = 'wc utility functions for text fields'
+default_version = '1.0'
+module_pathname = '$libdir/wc'
+relocatable = true
