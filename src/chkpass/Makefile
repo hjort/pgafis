@@ -14,7 +14,8 @@ PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
 else
 subdir = contrib/chkpass
-top_builddir = ../..
+top_builddir = /usr/src/postgresql-9.3
+#top_builddir = ../..
 include $(top_builddir)/src/Makefile.global
 include $(top_srcdir)/contrib/contrib-global.mk
 endif
