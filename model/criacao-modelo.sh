@@ -1,3 +1,9 @@
+#!/bin/bash
+
+export PGHOME=/usr/local/pgsql/bin
+export PGPORT=6432
+export PGHOST=localhost
+
 psql afis -c "
 DROP TABLE IF EXISTS dedos;
 CREATE TABLE dedos (
