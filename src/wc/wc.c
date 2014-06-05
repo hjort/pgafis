@@ -24,33 +24,24 @@ Datum
 wc_lines(PG_FUNCTION_ARGS)
 {
 	text *txt = PG_GETARG_TEXT_PP(0);
-	int count = 0;
+	//int32 size = VARSIZE(txt) - VARHDRSZ;
+	int32 count = 0;
+	char *str = VARDATA_ANY(txt);
+	//size_t nbytes = VARSIZE_ANY_EXHDR(txt);
 
 	// FIXME: não está funcionando...
-	if (txt == NULL)
+	if (!str)
+	//if (txt == NULL)
 		PG_RETURN_INT32(0);
 
-	// TODO: implementar isso!
-	//while (*txt) count++;
-	//PG_RETURN_INT32(count);
+	count = 1;
+	while (*str) {
+		if (*str == '\n')
+			count++;
+		str++;
+	}
 
-	PG_RETURN_INT32(42);
-
-	/*
-	chkpass    *a1 = (chkpass *) PG_GETARG_POINTER(0);
-	text	   *txt = PG_GETARG_TEXT_PP(0);
-	char		str[9];
-	char	   *crypt_output;
-
-	text_to_cstring_buffer(a2, str, sizeof(str));
-	crypt_output = crypt(str, a1->password);
-	if (crypt_output == NULL)
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("crypt() failed")));
-
-	PG_RETURN_BOOL(strcmp(a1->password, crypt_output) == 0);
-	*/
+	PG_RETURN_INT32(count);
 }
 
 PG_FUNCTION_INFO_V1(wc_words);
