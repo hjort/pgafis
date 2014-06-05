@@ -1,9 +1,12 @@
 #include "postgres.h"
+
 #include "fmgr.h"
 #include "utils/builtins.h"
 #include <unistd.h>
 
+#ifdef PG_MODULE_MAGIC
 PG_MODULE_MAGIC;
+#endif
 
 Datum wc_chars(PG_FUNCTION_ARGS);
 Datum wc_lines(PG_FUNCTION_ARGS);
@@ -20,6 +23,17 @@ PG_FUNCTION_INFO_V1(wc_lines);
 Datum
 wc_lines(PG_FUNCTION_ARGS)
 {
+	text *txt = PG_GETARG_TEXT_PP(0);
+	int count = 0;
+
+	// FIXME: não está funcionando...
+	if (txt == NULL)
+		PG_RETURN_INT32(0);
+
+	// TODO: implementar isso!
+	//while (*txt) count++;
+	//PG_RETURN_INT32(count);
+
 	PG_RETURN_INT32(42);
 
 	/*
