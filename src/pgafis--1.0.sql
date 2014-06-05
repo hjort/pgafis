@@ -5,7 +5,7 @@
 
 CREATE FUNCTION bz_match(text, text)
 	RETURNS int
-	AS 'MODULE_PATHNAME', 'pgafis_match'
+	AS 'MODULE_PATHNAME', 'bz_match'
 	LANGUAGE C STRICT IMMUTABLE;
 
 --

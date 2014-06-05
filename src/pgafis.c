@@ -6,13 +6,17 @@
  * Rodrigo Hjort <rodrigo.hjort@gmail.com>
  */
 
-#include "postgres.h"
+#define get_progname pg_get_progname
+#include <postgres.h>
+#undef get_progname
+#define bz_match nbis_bz_match
+#include <bozorth.h>
+#undef bz_match
 
 #include "fmgr.h"
 #include "utils/builtins.h"
 #include <stdio.h>
 #include <unistd.h>
-#include <bozorth.h>
 
 #ifdef PG_MODULE_MAGIC
 PG_MODULE_MAGIC;
@@ -29,27 +33,26 @@ int verbose_threshold = 0;
 
 FILE * errorfp        = FPNULL;
 
-extern char *get_progname(void);
-
-Datum pgafis_match(PG_FUNCTION_ARGS);
+Datum bz_match(PG_FUNCTION_ARGS);
 
 PG_FUNCTION_INFO_V1(bz_match);
 Datum
-pgafis_match(PG_FUNCTION_ARGS)
+bz_match(PG_FUNCTION_ARGS)
 {
-//	text *txt1 = PG_GETARG_TEXT_PP(0);
-//	text *txt2 = PG_GETARG_TEXT_PP(1);
+	text *txt1 = PG_GETARG_TEXT_PP(0);
+	text *txt2 = PG_GETARG_TEXT_PP(1);
 	//int32 size = VARSIZE(txt) - VARHDRSZ;
 	int32 score = 0;
-	//char *str = VARDATA_ANY(txt);
+	char *str1 = VARDATA_ANY(txt1);
+	char *str2 = VARDATA_ANY(txt2);
 	//size_t nbytes = VARSIZE_ANY_EXHDR(txt);
 
 //        int np = 5;
         struct xyt_struct *ps = XYT_NULL; // probe structure
         struct xyt_struct *gs = XYT_NULL; // gallery structure
 
-        set_progname(0, "pgafis", 0); // definir nome do programa
-        errorfp = stderr; // saída de erro padrão
+//        set_progname(0, "pgafis", 0); // definir nome do programa
+//        errorfp = stderr; // saída de erro padrão
 
 	// FIXME: não está funcionando...
 	//if (!str)
@@ -58,14 +61,18 @@ pgafis_match(PG_FUNCTION_ARGS)
 
 	// TODO: carregar tabelas XYT a partir dos argumentos "text"
 
-	/*
-	count = 1;
-	while (*str) {
-		if (*str == '\n')
-			count++;
-		str++;
+	score += 1;
+	while (*str1) {
+		if (*str1 == '\n')
+			score++;
+		str1++;
 	}
-	*/
+	score += 1;
+	while (*str2) {
+		if (*str2 == '\n')
+			score++;
+		str2++;
+	}
 
         if (ps != XYT_NULL)
                 free((char *) ps);
