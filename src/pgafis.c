@@ -43,7 +43,7 @@ bz_match(PG_FUNCTION_ARGS)
 {
 	text *txt1 = PG_GETARG_TEXT_PP(0);
 	text *txt2 = PG_GETARG_TEXT_PP(1);
-	//int32 size = VARSIZE(txt) - VARHDRSZ;
+	//int32 size = VARSIZE(txt2) - VARHDRSZ;
 	int32 score = 0;
 	char *str1 = VARDATA_ANY(txt1);
 	char *str2 = VARDATA_ANY(txt2);
@@ -56,17 +56,21 @@ bz_match(PG_FUNCTION_ARGS)
 //        set_progname(0, "pgafis", 0); // definir nome do programa
 //        errorfp = stderr; // saída de erro padrão
 
+//	elog(NOTICE, "size: %d", size);
+
 	// FIXME: não está funcionando...
 	//if (!str)
 	//if (txt == NULL)
 	//	PG_RETURN_INT32(0);
 
 	// TODO: carregar tabelas XYT a partir dos argumentos "text"
-	//ps = load_xyt(str1);
-	//gs = load_xyt(str2);
+	ps = load_xyt(str1);
+	gs = load_xyt(str2);
+
+	score = bozorth_main(ps, gs);
 
 	// FIXME: remover esse código ao final
-	score += 1;
+	/*score += 1;
 	while (*str1) {
 		if (*str1 == '\n')
 			score++;
@@ -77,7 +81,7 @@ bz_match(PG_FUNCTION_ARGS)
 		if (*str2 == '\n')
 			score++;
 		str2++;
-	}
+	}*/
 	// ...
 
 	if (ps != XYT_NULL)
@@ -90,10 +94,10 @@ bz_match(PG_FUNCTION_ARGS)
 
 struct xyt_struct * load_xyt(char *str)
 {
-	int nminutiae;
+	int nminutiae; // número da linha da minúcia
 	int m;
 	int i;
-	int nargs_expected;
+	int nargs_expected; // qtde esperada de colunas
 //	FILE * fp;
 	struct xyt_struct * xyt_s;
 	struct xytq_struct * xytq_s;
@@ -110,26 +114,28 @@ struct xyt_struct * load_xyt(char *str)
 
    // FIXME: última linha talvez não esteja sendo lida...
    while (*str) {
+
 	if (*str != '\n') {
-		strcat(xyt_line, str);
-		str++;
+		strncat(xyt_line, str++, 1);
 		continue;
 	}
 	str++;
 
-   /*while ( fgets( xyt_line, sizeof xyt_line, fp ) != CNULL ) 
-   {*/
       m = sscanf( xyt_line, "%d %d %d %d",
                    &xvals_lng[nminutiae],
                    &yvals_lng[nminutiae],
                    &tvals_lng[nminutiae],
                    &qvals_lng[nminutiae] );
+
+	//elog(NOTICE, "%2d = <%s>", nminutiae + 1, xyt_line);
+
 	memset(xyt_line, 0, MAX_LINE_LENGTH);
 
-      if ( nminutiae == 0 ) 
+      if (nminutiae == 0)
       {
          if ( m != 3 && m != 4 ) 
          {
+		elog(ERROR, "Invalid format of minutiae data on line %u", nminutiae + 1);
 		// TODO: usar handler de log do PG
             /*fprintf( errorfp, "%s: ERROR: sscanf() failed on line %u in minutiae file \"%s\"\n",
                      get_progname(), nminutiae+1, xyt_file );*/
@@ -139,15 +145,16 @@ struct xyt_struct * load_xyt(char *str)
       } 
       else 
       {
-         if ( m != nargs_expected ) 
+         if (m != nargs_expected)
          {
+		elog(ERROR, "Inconsistent argument count on line %u of minutiae data", nminutiae + 1);
 		// TODO: usar handler de log do PG
             /*fprintf( errorfp, "%s: ERROR: inconsistent argument count on line %u of minutiae file \"%s\"\n",
                      get_progname(), nminutiae+1, xyt_file );*/
             return XYT_NULL;
          }
       }
-      if ( m == 3 )
+      if (m == 3)
          qvals_lng[nminutiae] = 1;
 
       ++nminutiae;
@@ -159,6 +166,7 @@ struct xyt_struct * load_xyt(char *str)
    if (xytq_s == XYTQ_NULL)
    {
 	// TODO: usar handler de log do PG
+	elog(ERROR, "Allocation failure while loading minutiae buffer");
       /*fprintf( errorfp, "%s: ERROR: malloc() failure while loading minutiae buffer failed: %s\n",
                                                      get_progname(),
                                                      strerror(errno)
@@ -178,15 +186,18 @@ struct xyt_struct * load_xyt(char *str)
    // FIXME: precisa ser feita chamada a bz_prune()...
    //xyt_s = bz_prune(xytq_s, 0);
    // workaround...
-   xyt_s = (struct xyt_struct *) malloc( sizeof( struct xyt_struct ) );
-   for ( i = 0; i < nminutiae; i++ ) 
+   xyt_s = (struct xyt_struct *) malloc(sizeof(struct xyt_struct));
+   xyt_s->nrows = nminutiae;
+   for (i = 0; i < nminutiae; i++) 
    {
       xyt_s->xcol[i]     = xytq_s->xcol[i];
       xyt_s->ycol[i]     = xytq_s->ycol[i];
       xyt_s->thetacol[i] = xytq_s->thetacol[i];
    }
-   xyt_s->nrows = nminutiae;
+   free(xytq_s);
    // ...
+
+	elog(NOTICE, "Loaded minutiae data with %d lines", nminutiae);
 
 	// TODO: usar handler de log do PG
    /*if ( verbose_load )
