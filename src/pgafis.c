@@ -36,11 +36,11 @@ FILE * errorfp        = FPNULL;
 
 struct xyt_struct * load_xyt(char *str);
 
-Datum bz_match(PG_FUNCTION_ARGS);
+Datum pg_bz_match(PG_FUNCTION_ARGS);
 
-PG_FUNCTION_INFO_V1(bz_match);
+PG_FUNCTION_INFO_V1(pg_bz_match);
 Datum
-bz_match(PG_FUNCTION_ARGS)
+pg_bz_match(PG_FUNCTION_ARGS)
 {
 	text *txt1 = PG_GETARG_TEXT_PP(0);
 	text *txt2 = PG_GETARG_TEXT_PP(1);
@@ -198,7 +198,7 @@ struct xyt_struct * load_xyt(char *str)
    free(xytq_s);
    // ...
 
-	elog(NOTICE, "Loaded minutiae data with %d lines", nminutiae);
+//	elog(NOTICE, "Loaded minutiae data with %d lines", nminutiae);
 
 	// TODO: usar handler de log do PG
    /*if ( verbose_load )

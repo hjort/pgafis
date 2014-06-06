@@ -6,9 +6,11 @@ OBJS = pgafis.o
 EXTENSION = pgafis
 DATA = pgafis--1.0.sql pgafis--unpackaged--1.0.sql
 
-#SHLIB_LINK = $(filter -lcrypt, $(LIBS))
+NBIS_HOME = /opt/nbis-4.2.0
 
-override CPPFLAGS := -I/opt/nbis-4.2.0/include -L/opt/nbis-4.2.0/lib -lbozorth3 -lm
+SHLIB_LINK = ${NBIS_HOME}/lib/libbozorth3.a
+
+override CPPFLAGS := -I${NBIS_HOME}/include -L${NBIS_HOME}/lib -lbozorth3 -lm
 
 ifdef USE_PGXS
 PG_CONFIG = pg_config
