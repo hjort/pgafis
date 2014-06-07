@@ -94,15 +94,12 @@ struct xyt_struct * load_xyt(char *str)
 
 	memset(xyt_line, 0, MAX_LINE_LENGTH);
 
-	// FIXME: última linha talvez não esteja sendo lida...
-	//do {
-	while (*str) {
+	do {
 
-		if (*str != '\n') {
+		if (*str != '\n' && *str != '\0') {
 			strncat(xyt_line, str++, 1);
 			continue;
 		}
-		str++;
 
 		m = sscanf(xyt_line, "%d %d %d %d",
 			&xvals_lng[nminutiae],
@@ -135,12 +132,15 @@ struct xyt_struct * load_xyt(char *str)
 		if (m == 3)
 			qvals_lng[nminutiae] = 1;
 
+		if (!*str)
+			break;
+		str++;
+
 		++nminutiae;
 		if (nminutiae == MAX_FILE_MINUTIAE)
 			break;
 
-	//} while (*str);
-	}
+	} while (1);
 
 	xytq_s = (struct xytq_struct *) malloc(sizeof(struct xytq_struct));
 	if (xytq_s == XYTQ_NULL)
@@ -175,7 +175,7 @@ struct xyt_struct * load_xyt(char *str)
 	if (xytq_s != XYTQ_NULL)
 		free(xytq_s);
 
-	elog(NOTICE, "Loaded minutiae data with %d lines", nminutiae);
+	//elog(NOTICE, "Loaded minutiae data with %d lines", nminutiae + 1);
 
 	return xyt_s;
 }
