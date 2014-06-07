@@ -60,9 +60,11 @@ pg_bz_match(PG_FUNCTION_ARGS)
 	//elog(NOTICE, "size: %d", size);
 
 	ps = load_xyt(str1);
-	gs = load_xyt(str2);
+	if (ps != XYT_NULL)
+		gs = load_xyt(str2);
 
-	score = bozorth_main(ps, gs);
+	if (ps != XYT_NULL && gs != XYT_NULL)
+		score = bozorth_main(ps, gs);
 
 	if (ps != XYT_NULL)
 		free((char *) ps);
@@ -93,6 +95,7 @@ struct xyt_struct * load_xyt(char *str)
 	memset(xyt_line, 0, MAX_LINE_LENGTH);
 
 	// FIXME: última linha talvez não esteja sendo lida...
+	//do {
 	while (*str) {
 
 		if (*str != '\n') {
@@ -135,6 +138,8 @@ struct xyt_struct * load_xyt(char *str)
 		++nminutiae;
 		if (nminutiae == MAX_FILE_MINUTIAE)
 			break;
+
+	//} while (*str);
 	}
 
 	xytq_s = (struct xytq_struct *) malloc(sizeof(struct xytq_struct));
@@ -170,7 +175,7 @@ struct xyt_struct * load_xyt(char *str)
 	if (xytq_s != XYTQ_NULL)
 		free(xytq_s);
 
-	//elog(NOTICE, "Loaded minutiae data with %d lines", nminutiae);
+	elog(NOTICE, "Loaded minutiae data with %d lines", nminutiae);
 
 	return xyt_s;
 }
