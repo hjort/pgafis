@@ -38,7 +38,7 @@ OK - criar módulo do PG em C para ler dados de campo "text" - ex: qtd_linhas(te
 256 276 112 65
 ---------------------
 
-- criar função nativa em C para fazer comparação entre dois templates
+OK - criar função nativa em C para fazer comparação entre dois templates
 
 SELECT match_score(xyt, 'xyt-de-prova'::xyt), id_digital, id_pessoa
 FROM digitais

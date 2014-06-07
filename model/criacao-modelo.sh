@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export PGHOME=/usr/local/pgsql/bin
-export PGPORT=6432
+export PGPORT=5432
 export PGHOST=localhost
 
 psql afis -c "
