@@ -3,6 +3,23 @@ pgafis
 
 pgAFIS - Automated Fingerprint Identification System Support for PostgreSQL
 
+![fingers](./samples/fingers.jpg "Sample Fingerprints")
+
+```sql
+afis=#
+SELECT id, arq, xyt FROM dedos WHERE id IN (1, 2);
+
+ id |    arq    |      xyt       
+----+-----------+----------------
+  1 | 101_1.xyt | 45 62 5 72    +
+    |           | 56 280 118 17 +
+    |           | 73 71 95 78 ...
+  2 | 101_2.xyt | 18 39 5 15    +
+    |           | 32 257 118 82 +
+    |           | 44 47 95 67 ...
+(2 rows)
+```
+
 ```sql
 afis=#
 SELECT a.arq AS arq1, b.arq AS arq2,
@@ -20,19 +37,3 @@ ORDER BY match DESC;
  101_1.xyt | 101_2.xyt |    24
 (4 rows)
 ```
-
-```sql
-afis=#
-SELECT id, arq, xyt FROM dedos WHERE id IN (1, 2);
-
- id |    arq    |      xyt       
-----+-----------+----------------
-  1 | 101_1.xyt | 45 62 5 72    +
-    |           | 56 280 118 17 +
-    |           | 73 71 95 78 ...
-  2 | 101_2.xyt | 18 39 5 15    +
-    |           | 32 257 118 82 +
-    |           | 44 47 95 67 ...
-(2 rows)
-```
-
