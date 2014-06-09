@@ -3,6 +3,8 @@ pgafis
 
 pgAFIS - Automated Fingerprint Identification System Support for PostgreSQL
 
+![fingers](./samples/fingers.jpg "Sample Fingerprints")
+
 ```sql
 afis=#
 SELECT a.arq AS arq1, b.arq AS arq2,
