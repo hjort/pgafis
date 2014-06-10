@@ -5,9 +5,11 @@ pgAFIS - Automated Fingerprint Identification System Support for PostgreSQL
 
 ![fingers](./samples/fingers.jpg "Sample Fingerprints")
 
+# Sample fingerprints data
+
 ```sql
 afis=#
-SELECT id, arq, xyt FROM dedos LIMIT 2;
+SELECT id, arq, xyt FROM dedos;
 
  id |    arq    |      xyt       
 ----+-----------+----------------
@@ -17,8 +19,28 @@ SELECT id, arq, xyt FROM dedos LIMIT 2;
   2 | 101_2.xyt | 18 39 5 15    +
     |           | 32 257 118 82 +
     |           | 44 47 95 67 ...
-(2 rows)
+(...)
 ```
+- "xyt" column holds fingerprint templates in XYT format
+
+
+# Verification (1:1)
+
+```sql
+afis=#
+SELECT (bz_match(a.xyt, b.xyt) >= 30) AS match
+FROM dedos a, dedos b
+WHERE a.id = 1 AND b.id = 6;
+
+ match 
+-------
+ t
+(1 row)
+```
+- given two fingerprints, they can be considered the same according to a stated threshold value (e.g., 30)
+
+
+# Identification (1:N)
 
 ```sql
 afis=#
@@ -37,6 +59,7 @@ ORDER BY match DESC;
  101_1.xyt | 101_2.xyt |    24
 (4 rows)
 ```
+- entire table is read (sequential scan is made)
 
 ```sql
 afis=#
@@ -51,3 +74,4 @@ ORDER BY score DESC;
   3 | 101_3.xyt |    32
 (3 rows)
 ```
+- loop is made so far as reached a given number of templates (e.g, 3) above the defined threshold (e.g, 30)
