@@ -7,7 +7,7 @@ pgAFIS - Automated Fingerprint Identification System Support for PostgreSQL
 
 ```sql
 afis=#
-SELECT id, arq, xyt FROM dedos WHERE id IN (1, 2);
+SELECT id, arq, xyt FROM dedos LIMIT 2;
 
  id |    arq    |      xyt       
 ----+-----------+----------------
@@ -36,4 +36,18 @@ ORDER BY match DESC;
  101_1.xyt | 101_8.xyt |    37
  101_1.xyt | 101_2.xyt |    24
 (4 rows)
+```
+
+```sql
+afis=#
+SELECT id, arq, score
+FROM match_dedos((SELECT xyt FROM dedos WHERE id = 1), 30, 3)
+ORDER BY score DESC;
+
+ id |    arq    | score 
+----+-----------+-------
+  1 | 101_1.xyt |   144
+  6 | 101_6.xyt |    38
+  3 | 101_3.xyt |    32
+(3 rows)
 ```

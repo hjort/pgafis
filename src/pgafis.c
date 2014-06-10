@@ -71,6 +71,8 @@ pg_bz_match(PG_FUNCTION_ARGS)
 	if (gs != XYT_NULL)
 		free((char *) gs);
 
+//	elog(NOTICE, "score: %d", score);
+
 	PG_RETURN_INT32(score);
 }
 
@@ -107,7 +109,13 @@ struct xyt_struct * load_xyt(char *str)
 			&tvals_lng[nminutiae],
 			&qvals_lng[nminutiae]);
 
-		//elog(NOTICE, "%2d = <%s>", nminutiae + 1, xyt_line);
+//		elog(NOTICE, "%2d = <%s>", nminutiae + 1, xyt_line);
+
+//		if (nminutiae == 0)
+//			elog(NOTICE, "Line 1: %s", xyt_line);
+//		if (nminutiae > 0 && m != nargs_expected)
+//			elog(ERROR, "Inconsistent argument count on line %u of minutiae data (%u, %u): [%s]",
+//				nminutiae + 1, m, nargs_expected, xyt_line);
 
 		memset(xyt_line, 0, MAX_LINE_LENGTH);
 
@@ -173,7 +181,7 @@ struct xyt_struct * load_xyt(char *str)
 	*/
 
 	if (xytq_s != XYTQ_NULL)
-		free(xytq_s);
+		free((char *) xytq_s);
 
 	//elog(NOTICE, "Loaded minutiae data with %d lines", nminutiae + 1);
 
