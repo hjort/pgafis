@@ -1,0 +1,84 @@
+$ ./testar-afis.sh 9
+Quantidade: 9
+
+=> Captura das imagens (PGM)...
+Encontrado dispositivo: Digital Persona U.are.U 4000/4000B
+-> Coleta 1
+Bota o dedo agora!
+Enroll complete!
+-> Coleta 2
+Bota o dedo agora!
+Enroll complete!
+-> Coleta 3
+Bota o dedo agora!
+Enroll complete!
+-> Coleta 4
+Bota o dedo agora!
+Enroll complete!
+-> Coleta 5
+Bota o dedo agora!
+Enroll complete!
+-> Coleta 6
+Bota o dedo agora!
+Enroll complete!
+-> Coleta 7
+Bota o dedo agora!
+Enroll complete!
+-> Coleta 8
+Bota o dedo agora!
+Enroll complete!
+-> Coleta 9
+Bota o dedo agora!
+Enroll complete!
+
+=> Geração de WSQ...
+
+=> Extração de minúcias (XYT)...
+
+=> Comparação de cada template com os demais...
+
+[enroll1]
+176 enroll1.xyt
+62 enroll7.xyt
+40 enroll4.xyt
+
+[enroll2]
+415 enroll2.xyt
+131 enroll5.xyt
+109 enroll8.xyt
+
+[enroll3]
+341 enroll3.xyt
+176 enroll6.xyt
+164 enroll9.xyt
+
+[enroll4]
+124 enroll4.xyt
+47 enroll7.xyt
+40 enroll1.xyt
+
+[enroll5]
+277 enroll5.xyt
+131 enroll2.xyt
+110 enroll8.xyt
+
+[enroll6]
+344 enroll6.xyt
+265 enroll9.xyt
+177 enroll3.xyt
+
+[enroll7]
+207 enroll7.xyt
+62 enroll1.xyt
+46 enroll4.xyt
+
+[enroll8]
+258 enroll8.xyt
+109 enroll5.xyt
+108 enroll2.xyt
+
+[enroll9]
+334 enroll9.xyt
+265 enroll6.xyt
+165 enroll3.xyt
+
