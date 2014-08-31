@@ -49,29 +49,13 @@ SELECT a.arq AS arq1, b.arq AS arq2,
 FROM dedos a, dedos b
 WHERE a.id = 1
   AND bz_match(a.xyt, b.xyt) > 20
-ORDER BY match DESC;
+LIMIT 3;
 
    arq1    |   arq2    | match 
 -----------+-----------+-------
  101_1.xyt | 101_1.xyt |   144
- 101_1.xyt | 101_6.xyt |    40
- 101_1.xyt | 101_8.xyt |    37
  101_1.xyt | 101_2.xyt |    24
-(4 rows)
-```
-- entire table is read (sequential scan is made)
-
-```sql
-afis=#
-SELECT id, arq, score
-FROM match_dedos((SELECT xyt FROM dedos WHERE id = 1), 30, 3)
-ORDER BY score DESC;
-
- id |    arq    | score 
-----+-----------+-------
-  1 | 101_1.xyt |   144
-  6 | 101_6.xyt |    38
-  3 | 101_3.xyt |    32
+ 101_1.xyt | 101_6.xyt |    40
 (3 rows)
 ```
-- loop is made so far as reached a given number of templates (e.g, 3) above the defined threshold (e.g, 30)
+- sequential scan is made in the table, but so far as reached a given number of templates (e.g, 3) above the defined threshold (e.g, 20)
