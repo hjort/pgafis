@@ -58,4 +58,4 @@ LIMIT 3;
  101_1.xyt | 101_6.xyt |    40
 (3 rows)
 ```
-- sequential scan is made in the table, but so far as reached a given number of templates (e.g, 3) above the defined threshold (e.g, 20)
+- sequential scan is made on the table, but so far as a given number of templates (e.g, 3) above the defined threshold (e.g, 20) is reached
