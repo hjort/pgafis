@@ -45,3 +45,17 @@ FROM digitais
 WHERE classe_digital(xyt) = 'ANGULAR'
 ORDER BY 1 DESC;
 
+- criar função cwsq()
+
+CREATE FUNCTION cwsq(image bytea, bitrate float, width int, height int, depth int, ppi int) RETURNS bytea;
+
+cwsq: WSQ compresses grayscale fingerprint images
+image	the input byte array, either an IHead or raw pixmap, containing the fingerprint image to be compressed
+bitrate	determines the amount of lossy compression (2.25 -> ~5:1, 0.75 -> ~15:1) 
+w      the pixel width of the pixmap
+h      the pixel height of the pixmap
+d      the pixel depth of the pixmap
+ppi    the optional scan resolution of the image in integer units of pixels per inch
+
+-- cwsq .75 wsq finger.raw -r 500,500,8,500
+UPDATE sample SET wsq = cwsq(img, 0.75, 500, 500, 8, 500);
