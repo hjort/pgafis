@@ -11,11 +11,11 @@ ifeq ($(PORTNAME), win32)
 LDLIBS += -lws2_32
 endif
 
+CFLAGS += -g
 override CPPFLAGS := -I$(libpq_srcdir) $(CPPFLAGS)
 override LDLIBS := $(libpq_pgport) $(LDLIBS)
 
-
-PROGS = testlibpq testlibpq2 testlibpq3 testlibpq4 testlo testlo64
+PROGS = testlibpq testlibpq2 testlibpq3 testlibpq4 testlo testlo64 testbytea
 
 all: $(PROGS)
 
