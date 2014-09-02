@@ -8,6 +8,11 @@ CREATE FUNCTION bz_match(text, text)
 	AS 'MODULE_PATHNAME', 'pg_bz_match'
 	LANGUAGE C STRICT IMMUTABLE;
 
+CREATE FUNCTION cwsq(bytea, float, int, int, int, int)
+	RETURNS bytea
+	AS 'MODULE_PATHNAME', 'pg_cwsq'
+        LANGUAGE C STRICT IMMUTABLE;
+
 --
 --	eof
 --

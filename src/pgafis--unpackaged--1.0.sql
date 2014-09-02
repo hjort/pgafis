@@ -3,5 +3,7 @@
 -- complain if script is sourced in psql, rather than via CREATE EXTENSION
 \echo Use "CREATE EXTENSION pgafis" to load this file. \quit
 
-ALTER EXTENSION pgafis ADD function bz_match(text, text);
+ALTER EXTENSION pgafis ADD FUNCTION bz_match(text, text);
+
+ALTER EXTENSION pgafis ADD FUNCTION cwsq(bytea, float, int, int, int, int);
 

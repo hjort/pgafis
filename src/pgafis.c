@@ -34,10 +34,13 @@ int verbose_threshold = 0;
 
 FILE * errorfp = FPNULL;
 
+/* protótipos */
 struct xyt_struct * load_xyt(char *str);
-
 Datum pg_bz_match(PG_FUNCTION_ARGS);
+Datum pg_cwsq(PG_FUNCTION_ARGS);
 
+// pg_bz_match
+// CREATE FUNCTION bz_match(text, text) RETURNS int;
 PG_FUNCTION_INFO_V1(pg_bz_match);
 Datum
 pg_bz_match(PG_FUNCTION_ARGS)
@@ -76,6 +79,7 @@ pg_bz_match(PG_FUNCTION_ARGS)
 	PG_RETURN_INT32(score);
 }
 
+// load_xyt
 struct xyt_struct * load_xyt(char *str)
 {
 	int nminutiae; // número da linha da minúcia
@@ -186,5 +190,36 @@ struct xyt_struct * load_xyt(char *str)
 	//elog(NOTICE, "Loaded minutiae data with %d lines", nminutiae + 1);
 
 	return xyt_s;
+}
+
+// pg_cwsq
+// CREATE FUNCTION cwsq(image bytea, bitrate float, width int, height int, depth int, ppi int) RETURNS bytea;
+PG_FUNCTION_INFO_V1(pg_cwsq);
+Datum
+pg_cwsq(PG_FUNCTION_ARGS)
+{
+	bytea *image;
+	unsigned size;
+	float4 bitrate;
+	int32 width, height, depth, ppi;
+	bytea *res;
+
+	image = PG_GETARG_BYTEA_P(0);
+	size = VARSIZE(image) - VARHDRSZ;
+
+	bitrate = PG_GETARG_FLOAT4(1);
+	width = PG_GETARG_INT32(2);
+	height = PG_GETARG_INT32(3);
+	depth = PG_GETARG_INT32(4);
+	ppi = PG_GETARG_INT32(5);
+
+	//res = (text *) palloc(hlen + VARHDRSZ);
+	//SET_VARSIZE(res, hlen + VARHDRSZ);
+
+	// ...
+
+	PG_FREE_IF_COPY(image, 0);
+
+	PG_RETURN_BYTEA_P(res);
 }
 
