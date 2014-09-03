@@ -196,20 +196,6 @@ struct xyt_struct * load_xyt(char *str)
 
 int debug = 1;
 
-/*
-xxd -p ../samples/pgm/101_6.pgm | tr -d "\n" > /tmp/101_6.hex
-
-CREATE TABLE fingers (id serial primary key, pgm bytea, wsq bytea);
-cat /tmp/101_6.hex | /usr/local/pgsql/bin/psql afis -c "COPY fingers (pgm) FROM STDIN"
-UPDATE fingers SET wsq = cwsq(pgm, 0.75, 300, 300, 8, null);
-
-/usr/local/pgsql/bin/psql afis -c "SELECT encode(wsq, 'hex') FROM fingers LIMIT 1" -At > /tmp/101_6o.hex
-xxd -p -r /tmp/101_6o.hex > /tmp/101_6o.wsq
-
-/usr/local/pgsql/bin/psql afis -c "SELECT encode(pgm, 'hex') FROM fingers LIMIT 1" -At > /tmp/101_6p.hex
-xxd -p -r /tmp/101_6p.hex > /tmp/101_6p.pgm
-*/
-
 // pg_cwsq
 // CREATE FUNCTION cwsq(image bytea, bitrate real, width int, height int, depth int, ppi int) RETURNS bytea;
 // select cwsq(E'123\\000456', 0.75, 300, 300, 8, 10), E'123\\000456'::bytea;
@@ -258,11 +244,15 @@ pg_cwsq(PG_FUNCTION_ARGS)
 	res = (bytea *) palloc(osize + VARHDRSZ);
 	SET_VARSIZE(res, osize + VARHDRSZ);
 
+	elog(NOTICE, "odata = %d, res = %d", odata, res);
+
 	//odata = VARDATA(res);
 	//memset(odata, 0, osize);
 	//memcpy(odata, idata, osize);
 
-	memcpy(res, odata, osize);
+	memcpy(VARDATA(res), VARDATA(odata), osize);
+
+	elog(NOTICE, "odata = %d, res = %d", odata, res);
 
 	//pfree(idata);
 	//pfree(odata);

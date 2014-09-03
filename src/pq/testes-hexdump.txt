@@ -22,3 +22,12 @@ diff x3.png x4.png
 
 file x*
 
+/usr/local/pgsql/bin/psql postgres -At -c "select encode(contents, 'hex') from tblob limit 1 offset 1" > x3.hex
+
+
+/usr/local/pgsql/bin/pg_dump postgres -t tblob
+
+CREATE TABLE bin (id serial primary key, val bytea);
+
+(echo -n "\\\\x" ; cat x2.hex) | /usr/local/pgsql/bin/psql postgres -c "copy bin (val) from stdin"
+
