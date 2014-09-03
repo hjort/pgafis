@@ -19,6 +19,8 @@
 #include "fmgr.h"
 #include "utils/builtins.h"
 
+#include <wsq.h>
+
 #ifdef PG_MODULE_MAGIC
 PG_MODULE_MAGIC;
 #endif
@@ -192,33 +194,78 @@ struct xyt_struct * load_xyt(char *str)
 	return xyt_s;
 }
 
+int debug = 1;
+
+/*
+xxd -p ../samples/pgm/101_6.pgm | tr -d "\n" > /tmp/101_6.hex
+
+CREATE TABLE fingers (id serial primary key, pgm bytea, wsq bytea);
+cat /tmp/101_6.hex | /usr/local/pgsql/bin/psql afis -c "COPY fingers (pgm) FROM STDIN"
+UPDATE fingers SET wsq = cwsq(pgm, 0.75, 300, 300, 8, null);
+
+/usr/local/pgsql/bin/psql afis -c "SELECT encode(wsq, 'hex') FROM fingers LIMIT 1" -At > /tmp/101_6o.hex
+xxd -p -r /tmp/101_6o.hex > /tmp/101_6o.wsq
+
+/usr/local/pgsql/bin/psql afis -c "SELECT encode(pgm, 'hex') FROM fingers LIMIT 1" -At > /tmp/101_6p.hex
+xxd -p -r /tmp/101_6p.hex > /tmp/101_6p.pgm
+*/
+
 // pg_cwsq
-// CREATE FUNCTION cwsq(image bytea, bitrate float, width int, height int, depth int, ppi int) RETURNS bytea;
+// CREATE FUNCTION cwsq(image bytea, bitrate real, width int, height int, depth int, ppi int) RETURNS bytea;
+// select cwsq(E'123\\000456', 0.75, 300, 300, 8, 10), E'123\\000456'::bytea;
 PG_FUNCTION_INFO_V1(pg_cwsq);
 Datum
 pg_cwsq(PG_FUNCTION_ARGS)
 {
 	bytea *image;
-	unsigned size;
 	float4 bitrate;
 	int32 width, height, depth, ppi;
 	bytea *res;
+	unsigned isize, osize;
+	unsigned char *idata, *odata;
+	int ret;
 
+	// read bytea image parameter
 	image = PG_GETARG_BYTEA_P(0);
-	size = VARSIZE(image) - VARHDRSZ;
+	isize = VARSIZE(image) - VARHDRSZ;
+	idata = (unsigned char *) VARDATA(image);
 
+	elog(NOTICE, "image: %x, isize: %d, idata: %x",
+		image, isize, idata);
+
+	// read remaining function parameters
 	bitrate = PG_GETARG_FLOAT4(1);
 	width = PG_GETARG_INT32(2);
 	height = PG_GETARG_INT32(3);
 	depth = PG_GETARG_INT32(4);
-	ppi = PG_GETARG_INT32(5);
+	ppi = PG_ARGISNULL(5) ? -1 : PG_GETARG_INT32(5);
 
-	//res = (text *) palloc(hlen + VARHDRSZ);
-	//SET_VARSIZE(res, hlen + VARHDRSZ);
+	elog(NOTICE, "bitrate: %.2f, width: %d, height: %d, depth: %d, ppi: %d",
+		bitrate, width, height, depth, ppi);
 
-	// ...
+	// encode/compress the image pixmap
+	if ((ret = wsq_encode_mem(&odata, &osize, bitrate,
+		                   idata, width, height, depth, ppi, NULL))) {
+		PG_RETURN_NULL();
+	}
 
-	PG_FREE_IF_COPY(image, 0);
+	if (debug > 0)
+		elog(NOTICE, "Image data encoded, compressed byte length = %d", osize);
+
+	//osize = isize * 2; // ???
+
+	// initialize buffer to copy to
+	res = (bytea *) palloc(osize + VARHDRSZ);
+	SET_VARSIZE(res, osize + VARHDRSZ);
+
+	//odata = VARDATA(res);
+	//memset(odata, 0, osize);
+	//memcpy(odata, idata, osize);
+
+	memcpy(res, odata, osize);
+
+	//pfree(idata);
+	//pfree(odata);
 
 	PG_RETURN_BYTEA_P(res);
 }
