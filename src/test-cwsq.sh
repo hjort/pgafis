@@ -46,3 +46,6 @@ PSQL -c "SELECT length(pgm) AS pgm_bytes, length(wsq) AS wsq_bytes FROM fingers"
 for a in /tmp/101*.wsq; do echo $a; hd -n 200 $a; done
 for a in /tmp/101*.wsq; do echo $a; hd $a | tail; done
 
+qiv /tmp/101*.pgm
+dpyimage /tmp/101*.wsq
+
