@@ -15,9 +15,13 @@ CFLAGS += -g
 override CPPFLAGS := -I$(libpq_srcdir) $(CPPFLAGS)
 override LDLIBS := $(libpq_pgport) $(LDLIBS)
 
-PROGS = testlibpq testlibpq2 testlibpq3 testlibpq4 testlo testlo64 testbytea
+PROGS = testlibpq testbytea
+#PROGS = testlibpq testlibpq2 testlibpq3 testlibpq4 testlo testlo64 testbytea
 
 all: $(PROGS)
 
+test: all
+	./testbytea dbname=afis
+
 clean:
-	rm -f $(PROGS)
+	rm -f $(PROGS) *.o

@@ -8,7 +8,10 @@
  * grant all on tblob to public;
 
 psql -c "copy (select encode(contents, 'hex') from tblob) to stdout" -At > /tmp/s.hex
+psql -c "select encode(contents, 'hex') from tblob" -At > /tmp/s.hex
 xxd -p -r /tmp/s.hex > /tmp/s.jpg
+
+xxd -p sample2.jpg | tr -d "\n" > /tmp/s2.hex
 
  */
 
@@ -223,6 +226,9 @@ main(int argc, char **argv)
 	// liberar memória
 	free(odata);
 
+    // TODO: terminar o código abaixo
+	exit_nicely(conn);
+
 	/*
 	 * The point of this program is to illustrate use of PQexecParams() with
 	 * out-of-line parameters, as well as binary transmission of data.
@@ -239,12 +245,12 @@ main(int argc, char **argv)
 
 	res = PQexecParams(conn,
 					   "SELECT * FROM test1 WHERE t = $1",
-					   1,		/* one param */
-					   NULL,	/* let the backend deduce param type */
+					   1,		// one param
+					   NULL,	// let the backend deduce param type
 					   paramValues,
-					   NULL,	/* don't need param lengths since text */
-					   NULL,	/* default to all text params */
-					   1);		/* ask for binary results */
+					   NULL,	// don't need param lengths since text
+					   NULL,	// default to all text params
+					   1);		// ask for binary results
 
 	if (PQresultStatus(res) != PGRES_TUPLES_OK)
 	{
