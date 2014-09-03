@@ -12,7 +12,6 @@ psql -c "select encode(contents, 'hex') from tblob" -At > /tmp/s.hex
 xxd -p -r /tmp/s.hex > /tmp/s.jpg
 
 xxd -p sample2.jpg | tr -d "\n" > /tmp/s2.hex
-
  */
 
 #ifdef WIN32
@@ -212,7 +211,7 @@ main(int argc, char **argv)
 	}
 
 	// ler arquivo de imagem
-	ret = read_from_file("sample2.jpg", &odata, &osize);
+	ret = read_from_file("x.png", &odata, &osize);
 	fprintf(stderr, "File read successfully, size: %d\n", osize);
 	//dump_buffer(odata, osize);
 

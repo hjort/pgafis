@@ -1,0 +1,24 @@
+PGM:
+./testbytea dbname=postgres
+/usr/local/pgsql/bin/psql postgres -At -c "select encode(contents, 'hex') from tblob" > x1.hex
+xxd -p -r x1.hex > x1.pgm
+
+xxd -p x.pgm | tr -d '\n' > x2.hex
+xxd -p -r x2.hex > x2.pgm
+
+diff x1.hex x2.hex
+diff x1.pgm x2.pgm
+
+PNG:
+./testbytea dbname=postgres
+/usr/local/pgsql/bin/psql postgres -At -c "select encode(contents, 'hex') from tblob limit 1 offset 1" > x3.hex
+xxd -p -r x3.hex > x3.png
+
+xxd -p x.png | tr -d '\n' > x4.hex
+xxd -p -r x4.hex > x4.png
+
+diff x3.hex x4.hex
+diff x3.png x4.png
+
+file x*
+
