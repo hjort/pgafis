@@ -1,5 +1,5 @@
 /**
- * pgAFIS - Automated Fingerprint Identification System Support for PostgreSQL
+ * pgAFIS - Automated Fingerprint Identification System support for PostgreSQL
  * Project Home: https://github.com/hjort/pgafis
  *
  * Authors:
@@ -249,6 +249,17 @@ pg_cwsq(PG_FUNCTION_ARGS)
 	memcpy(VARDATA(res), odata, osize);
 
 	//pfree(odata);
+
+	PG_RETURN_BYTEA_P(res);
+}
+
+// pg_mindtct
+// CREATE FUNCTION mindt(image bytea, boost boolean) RETURNS bytea;
+PG_FUNCTION_INFO_V1(pg_mindtct);
+Datum
+pg_mindtct(PG_FUNCTION_ARGS)
+{
+	bytea *res;
 
 	PG_RETURN_BYTEA_P(res);
 }
