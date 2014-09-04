@@ -13,13 +13,14 @@
 */
 
 #define MAXPATHLEN 255
+#define ushort unsigned short
 
 int debug = 1;
 
 int main(int argc, char *argv[]) {
 
 	int boostflag, m1flag;
-	char ifile[MAXPATHLEN], ofile[MAXPATHLEN];
+	char ifile[MAXPATHLEN], ofile[MAXPATHLEN], minfile[MAXPATHLEN];
 	unsigned char *idata, *bdata;
 	int img_type;
 	int ilen, iw, ih, id, ippi, bw, bh, bd;
@@ -94,7 +95,12 @@ int main(int argc, char *argv[]) {
 		   direction_map, low_contrast_map,
 		   low_flow_map, high_curve_map, map_w, map_h)))*/
 
-	print_minutiae(minutiae);
+	// imprimir minúcias
+//	print_minutiae(minutiae);
+
+	// gravar minúcias
+	sprintf(minfile, "%s.%s", ifile, "mdt");
+	write_minutiae(minutiae, minfile);
 
 	/* Done with minutiae detection maps. */
 	free(quality_map);
@@ -129,6 +135,59 @@ int print_minutiae(const MINUTIAE *minutiae)
 	}
 	fprintf(fp, "END MINUTIAE;\n");
 
+	return(0);
+}
+
+/**
+ * Grava as minúcias em arquivo binário.
+ */
+int write_minutiae(const MINUTIAE *minutiae, char *filename)
+{
+	FILE *file;
+	size_t ret;
+	unsigned i, qty, ox, oy, ot, oq;
+	MINUTIA *minutia;
+	ushort *mdt, *pmdt, len;
+
+	file = fopen(filename, "wb");
+	fprintf(stdout, "Writing minutiae to file %s\n", filename);
+	qty = minutiae->num;
+
+	// 1. grava byte a byte
+	/*
+	fputc(qty, file);
+	for (i = 0; i < qty; i++) {
+		minutia = minutiae->list[i];
+		lfs2m1_minutia_XYT(&ox, &oy, &ot, minutia);
+		oq = sround(minutia->reliability * 100.0);
+		fputc(ox, file);
+		fputc(oy, file);
+		fputc(ot, file);
+		fputc(oq, file);
+	}
+	*/
+	// ...
+
+	// 2. grava de uma só vez
+	len = 1 + qty * 4;
+	mdt = malloc(sizeof(ushort) * len);
+	pmdt = mdt;
+	//memset(mdt, 0, sizeof(ushort) * siz);
+	*pmdt++ = qty;
+	for (i = 0; i < qty; i++) {
+		minutia = minutiae->list[i];
+		lfs2m1_minutia_XYT(&ox, &oy, &ot, minutia);
+		oq = sround(minutia->reliability * 100.0);
+		*pmdt++ = ox;
+		*pmdt++ = oy;
+		*pmdt++ = ot;
+		*pmdt++ = oq;
+	}
+	fwrite(mdt, sizeof(ushort), len, file);
+	free(mdt);
+	// ...
+
+	fclose(file);
 	return(0);
 }
 
