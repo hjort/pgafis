@@ -13,8 +13,9 @@ IMGTOOLS_LIBS = -limage -lihead -lwsq -ljpegl -lfet -lioutil -lutil -lm
 NBIS_LIB = ${NBIS_HOME}/lib/lib
 
 SHLIB_LINK = ${NBIS_LIB}bozorth3.a \
-	${NBIS_LIB}wsq.a ${NBIS_LIB}ioutil.a ${NBIS_LIB}fet.a ${NBIS_LIB}jpegl.a \
-	${NBIS_LIB}util.a
+	${NBIS_LIB}wsq.a ${NBIS_LIB}ioutil.a ${NBIS_LIB}fet.a \
+	${NBIS_LIB}jpegl.a ${NBIS_LIB}png.a \
+	${NBIS_LIB}util.a ${NBIS_LIB}image.a
 
 override CPPFLAGS := -I${NBIS_HOME}/include -L${NBIS_HOME}/lib ${BOZORTH_LIBS} ${IMGTOOLS_LIBS}
 
@@ -29,3 +30,6 @@ top_builddir = /usr/src/postgresql-9.3
 include $(top_builddir)/src/Makefile.global
 include $(top_srcdir)/contrib/contrib-global.mk
 endif
+
+#pgafis.o: xyt.c cwsq.c mindt.c match.c
+

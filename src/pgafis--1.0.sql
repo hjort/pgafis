@@ -10,8 +10,13 @@ CREATE FUNCTION bz_match(text, text)
 
 CREATE FUNCTION cwsq(bytea, real, int, int, int, int)
 	RETURNS bytea
-	AS 'MODULE_PATHNAME', 'pg_cwsq'
+	AS 'MODULE_PATHNAME', 'pg_wsq_encode'
         LANGUAGE C IMMUTABLE;
+
+CREATE FUNCTION mindt(bytea, boolean)
+	RETURNS bytea
+	AS 'MODULE_PATHNAME', 'pg_min_detect'
+        LANGUAGE C STRICT IMMUTABLE;
 
 --
 --	eof
