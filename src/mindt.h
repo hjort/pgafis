@@ -19,7 +19,6 @@ int decode_grayscale_image(int *oimg_type,
 int write_minutiae(unsigned char **odata, int *osize, const MINUTIAE *minutiae);
 */
 
-// pg_mindtct
 // CREATE FUNCTION mindt(wsq bytea, boost boolean) RETURNS bytea;
 PG_FUNCTION_INFO_V1(pg_min_detect);
 Datum

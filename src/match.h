@@ -29,7 +29,6 @@ FILE * errorfp = FPNULL;
 
 struct xyt_struct * load_xyt(char*);
 
-// pg_bz_match
 // CREATE FUNCTION bz_match(text, text) RETURNS int;
 PG_FUNCTION_INFO_V1(pg_bz_match);
 Datum

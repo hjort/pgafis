@@ -13,7 +13,6 @@ SELECT length(cwsq(pgm, 0.75, 300, 300, 8, null)) from fingers;
 
 #include <wsq.h>
 
-// pg_cwsq
 // CREATE FUNCTION cwsq(image bytea, bitrate real,
 //   width int, height int, depth int, ppi int) RETURNS bytea;
 PG_FUNCTION_INFO_V1(pg_wsq_encode);
