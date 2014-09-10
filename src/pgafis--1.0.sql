@@ -15,7 +15,12 @@ CREATE FUNCTION mindt(bytea, boolean)
 */
 CREATE FUNCTION bz_match(text, text)
 	RETURNS int
-	AS 'MODULE_PATHNAME', 'pg_bz_match'
+	AS 'MODULE_PATHNAME', 'pg_bz_match_text'
+	LANGUAGE C STRICT IMMUTABLE;
+
+CREATE FUNCTION bz_match(bytea, bytea)
+	RETURNS int
+	AS 'MODULE_PATHNAME', 'pg_bz_match_bytea'
 	LANGUAGE C STRICT IMMUTABLE;
 
 --

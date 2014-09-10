@@ -10,11 +10,15 @@
 SELECT (bz_match(a.xyt, b.xyt) >= 30) AS match
 FROM dedos a, dedos b
 WHERE a.id = 1 AND b.id = 6;
+
+SELECT bz_match(wsq, wsq) from fingers;
 */
 
 #define bz_match nbis_bz_match
 #include <bozorth.h>
 #undef bz_match
+
+#include "xyt.h"
 
 int m1_xyt                  = 1; // -m1: M1 default {x,y,t} representation
 int max_minutiae            = DEFAULT_BOZORTH_MINUTIAE; // -n max-minutiae
@@ -27,12 +31,10 @@ int verbose_threshold = 0;
 
 FILE * errorfp = FPNULL;
 
-struct xyt_struct * load_xyt(char*);
-
 // CREATE FUNCTION bz_match(text, text) RETURNS int;
-PG_FUNCTION_INFO_V1(pg_bz_match);
+PG_FUNCTION_INFO_V1(pg_bz_match_text);
 Datum
-pg_bz_match(PG_FUNCTION_ARGS)
+pg_bz_match_text(PG_FUNCTION_ARGS)
 {
 	text *txt1 = PG_GETARG_TEXT_PP(0);
 	text *txt2 = PG_GETARG_TEXT_PP(1);
@@ -68,116 +70,42 @@ pg_bz_match(PG_FUNCTION_ARGS)
 	PG_RETURN_INT32(score);
 }
 
-// load_xyt
-struct xyt_struct * load_xyt(char *str)
+// CREATE FUNCTION bz_match(bytea, bytea) RETURNS int;
+PG_FUNCTION_INFO_V1(pg_bz_match_bytea);
+Datum
+pg_bz_match_bytea(PG_FUNCTION_ARGS)
 {
-	int nminutiae; // número da linha da minúcia
-	int m;
-	int i;
-	int nargs_expected; // qtde esperada de colunas
+	bytea *wsq1, *wsq2;
+	unsigned size1, size2;
+	unsigned char *data1, *data2;
+	int32 score = 0;
 
-	struct xyt_struct * xyt_s;
-	struct xytq_struct * xytq_s;
-	int xvals_lng[MAX_FILE_MINUTIAE], // temporary lists to store all the minutiae from a finger
-		yvals_lng[MAX_FILE_MINUTIAE],
-		tvals_lng[MAX_FILE_MINUTIAE],
-		qvals_lng[MAX_FILE_MINUTIAE];
-	char xyt_line[MAX_LINE_LENGTH];
+	struct xyt_struct *ps = XYT_NULL; // probe structure
+	struct xyt_struct *gs = XYT_NULL; // gallery structure
 
-	nminutiae = 0;
-	nargs_expected = 0;
+	wsq1 = PG_GETARG_BYTEA_P(0);
+	size1 = VARSIZE(wsq1) - VARHDRSZ;
+	data1 = (unsigned char *) VARDATA(wsq1);
 
-	memset(xyt_line, 0, MAX_LINE_LENGTH);
+	wsq2 = PG_GETARG_BYTEA_P(1);
+	size2 = VARSIZE(wsq2) - VARHDRSZ;
+	data2 = (unsigned char *) VARDATA(wsq2);
 
-	do {
+	ps = load_xyt_binary(data1, size1);
+	if (ps != XYT_NULL)
+		gs = load_xyt_binary(data2, size2);
 
-		if (*str != '\n' && *str != '\0') {
-			strncat(xyt_line, str++, 1);
-			continue;
-		}
+	if (ps != XYT_NULL && gs != XYT_NULL)
+		score = bozorth_main(ps, gs);
 
-		m = sscanf(xyt_line, "%d %d %d %d",
-			&xvals_lng[nminutiae],
-			&yvals_lng[nminutiae],
-			&tvals_lng[nminutiae],
-			&qvals_lng[nminutiae]);
+	if (ps != XYT_NULL)
+		free((char *) ps);
+	if (gs != XYT_NULL)
+		free((char *) gs);
 
-//		elog(NOTICE, "%2d = <%s>", nminutiae + 1, xyt_line);
+	if (debug > 0)
+		elog(NOTICE, "score: %d", score);
 
-//		if (nminutiae == 0)
-//			elog(NOTICE, "Line 1: %s", xyt_line);
-//		if (nminutiae > 0 && m != nargs_expected)
-//			elog(ERROR, "Inconsistent argument count on line %u of minutiae data (%u, %u): [%s]",
-//				nminutiae + 1, m, nargs_expected, xyt_line);
-
-		memset(xyt_line, 0, MAX_LINE_LENGTH);
-
-		if (nminutiae == 0)
-		{
-			if (m != 3 && m != 4) 
-			{
-				elog(ERROR, "Invalid format of minutiae data on line %u", nminutiae + 1);
-				return XYT_NULL;
-			}
-			nargs_expected = m;
-		} 
-		else 
-		{
-			if (m != nargs_expected)
-			{
-				elog(ERROR, "Inconsistent argument count on line %u of minutiae data", nminutiae + 1);
-				return XYT_NULL;
-			}
-		}
-
-		if (m == 3)
-			qvals_lng[nminutiae] = 1;
-
-		if (!*str)
-			break;
-		str++;
-
-		++nminutiae;
-		if (nminutiae == MAX_FILE_MINUTIAE)
-			break;
-
-	} while (1);
-
-	xytq_s = (struct xytq_struct *) malloc(sizeof(struct xytq_struct));
-	if (xytq_s == XYTQ_NULL)
-	{
-		elog(ERROR, "Allocation failure while loading minutiae buffer");
-		return XYT_NULL;
-	}
-
-	xytq_s->nrows = nminutiae;
-	for (i = 0; i < nminutiae; i++)
-	{
-		xytq_s->xcol[i] = xvals_lng[i];
-		xytq_s->ycol[i] = yvals_lng[i];
-		xytq_s->thetacol[i] = tvals_lng[i];
-		xytq_s->qualitycol[i] = qvals_lng[i];
-	}
-
-	xyt_s = bz_prune(xytq_s, 0);
-
-	// workaround temporário...
-	/*
-	xyt_s = (struct xyt_struct *) malloc(sizeof(struct xyt_struct));
-	xyt_s->nrows = nminutiae;
-	for (i = 0; i < nminutiae; i++) 
-	{
-		xyt_s->xcol[i]     = xytq_s->xcol[i];
-		xyt_s->ycol[i]     = xytq_s->ycol[i];
-		xyt_s->thetacol[i] = xytq_s->thetacol[i];
-	}
-	*/
-
-	if (xytq_s != XYTQ_NULL)
-		free((char *) xytq_s);
-
-	//elog(NOTICE, "Loaded minutiae data with %d lines", nminutiae + 1);
-
-	return xyt_s;
+	PG_RETURN_INT32(score);
 }
 

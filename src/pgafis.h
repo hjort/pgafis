@@ -21,12 +21,4 @@
 
 #define ushort unsigned short
 
-extern Datum pg_wsq_encode(PG_FUNCTION_ARGS);
-extern Datum pg_min_detect(PG_FUNCTION_ARGS);
-extern Datum pg_bz_match(PG_FUNCTION_ARGS);
-
-#include "cwsq.h"
-//#include "mindt.h"
-#include "match.h"
-
 #endif   /* PGAFIS_H */
