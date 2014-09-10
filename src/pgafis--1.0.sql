@@ -3,20 +3,20 @@
 -- complain if script is sourced in psql, rather than via CREATE EXTENSION
 \echo Use "CREATE EXTENSION pgafis" to load this file. \quit
 
-CREATE FUNCTION bz_match(text, text)
-	RETURNS int
-	AS 'MODULE_PATHNAME', 'pg_bz_match'
-	LANGUAGE C STRICT IMMUTABLE;
-
 CREATE FUNCTION cwsq(bytea, real, int, int, int, int)
 	RETURNS bytea
 	AS 'MODULE_PATHNAME', 'pg_wsq_encode'
         LANGUAGE C IMMUTABLE;
-
+/*
 CREATE FUNCTION mindt(bytea, boolean)
 	RETURNS bytea
 	AS 'MODULE_PATHNAME', 'pg_min_detect'
         LANGUAGE C STRICT IMMUTABLE;
+*/
+CREATE FUNCTION bz_match(text, text)
+	RETURNS int
+	AS 'MODULE_PATHNAME', 'pg_bz_match'
+	LANGUAGE C STRICT IMMUTABLE;
 
 --
 --	eof
