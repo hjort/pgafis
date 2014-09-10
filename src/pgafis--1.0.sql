@@ -7,12 +7,17 @@ CREATE FUNCTION cwsq(bytea, real, int, int, int, int)
 	RETURNS bytea
 	AS 'MODULE_PATHNAME', 'pg_wsq_encode'
         LANGUAGE C IMMUTABLE;
-/*
+
+CREATE FUNCTION mindt(bytea)
+	RETURNS bytea
+	AS 'MODULE_PATHNAME', 'pg_min_detect'
+        LANGUAGE C STRICT IMMUTABLE;
+
 CREATE FUNCTION mindt(bytea, boolean)
 	RETURNS bytea
 	AS 'MODULE_PATHNAME', 'pg_min_detect'
         LANGUAGE C STRICT IMMUTABLE;
-*/
+
 CREATE FUNCTION bz_match(text, text)
 	RETURNS int
 	AS 'MODULE_PATHNAME', 'pg_bz_match_text'

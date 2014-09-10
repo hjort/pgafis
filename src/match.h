@@ -31,7 +31,7 @@ int verbose_threshold = 0;
 
 FILE * errorfp = FPNULL;
 
-// CREATE FUNCTION bz_match(text, text) RETURNS int;
+// CREATE FUNCTION bz_match(text, text) RETURNS int
 PG_FUNCTION_INFO_V1(pg_bz_match_text);
 Datum
 pg_bz_match_text(PG_FUNCTION_ARGS)
@@ -70,7 +70,7 @@ pg_bz_match_text(PG_FUNCTION_ARGS)
 	PG_RETURN_INT32(score);
 }
 
-// CREATE FUNCTION bz_match(bytea, bytea) RETURNS int;
+// CREATE FUNCTION bz_match(bytea, bytea) RETURNS int
 PG_FUNCTION_INFO_V1(pg_bz_match_bytea);
 Datum
 pg_bz_match_bytea(PG_FUNCTION_ARGS)

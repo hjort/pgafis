@@ -5,6 +5,9 @@
 
 ALTER EXTENSION pgafis ADD FUNCTION cwsq(bytea, real, int, int, int, int);
 
+ALTER EXTENSION pgafis ADD FUNCTION mindt(bytea);
+ALTER EXTENSION pgafis ADD FUNCTION mindt(bytea, boolean);
+
 ALTER EXTENSION pgafis ADD FUNCTION bz_match(text, text);
 ALTER EXTENSION pgafis ADD FUNCTION bz_match(bytea, bytea);
 

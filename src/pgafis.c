@@ -18,7 +18,7 @@ extern Datum pg_bz_match_text(PG_FUNCTION_ARGS);
 extern Datum pg_bz_match_bytea(PG_FUNCTION_ARGS);
 
 #include "cwsq.h"
-//#include "mindt.h"
+#include "mindt.h"
 #include "match.h"
 
 int debug = 1;

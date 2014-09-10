@@ -8,13 +8,13 @@
 
 /*
 SELECT cwsq(E'123\\000456', 0.75, 300, 300, 8, 10), E'123\\000456'::bytea;
-SELECT length(cwsq(pgm, 0.75, 300, 300, 8, null)) from fingers;
+SELECT length(cwsq(pgm, 0.75, 300, 300, 8, null)) FROM fingers;
 */
 
 #include <wsq.h>
 
 // CREATE FUNCTION cwsq(image bytea, bitrate real,
-//   width int, height int, depth int, ppi int) RETURNS bytea;
+//   width int, height int, depth int, ppi int) RETURNS bytea
 PG_FUNCTION_INFO_V1(pg_wsq_encode);
 Datum
 pg_wsq_encode(PG_FUNCTION_ARGS)
