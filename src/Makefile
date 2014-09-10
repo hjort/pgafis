@@ -1,4 +1,4 @@
-# contrib/pgafis/Makefile
+# pgafis/Makefile
 
 MODULE_big = pgafis
 OBJS = pgafis.o
