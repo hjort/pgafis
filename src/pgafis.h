@@ -20,5 +20,6 @@
 #include "utils/builtins.h"
 
 #define ushort unsigned short
+#define uchar unsigned char
 
 #endif   /* PGAFIS_H */

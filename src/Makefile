@@ -15,10 +15,12 @@ NBIS_LIB = ${NBIS_HOME}/lib/lib
 SHLIB_LINK = ${NBIS_LIB}bozorth3.a \
 	${NBIS_LIB}mindtct.a \
 	${NBIS_LIB}wsq.a ${NBIS_LIB}ioutil.a ${NBIS_LIB}fet.a \
-	${NBIS_LIB}jpegl.a ${NBIS_LIB}png.a \
+	${NBIS_LIB}jpegl.a \
 	${NBIS_LIB}util.a ${NBIS_LIB}image.a
+#${NBIS_LIB}png.a \
 
 override CPPFLAGS := -I${NBIS_HOME}/include -L${NBIS_HOME}/lib ${BOZORTH_LIBS} ${IMGTOOLS_LIBS}
+override LDFLAGS := -m32 -fPIC
 
 ifdef USE_PGXS
 PG_CONFIG = pg_config

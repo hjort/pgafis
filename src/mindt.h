@@ -15,14 +15,9 @@ SELECT mindt(wsq, true) FROM fingers;
 #include <imgtype.h>
 #include <imgboost.h>
 
-//int extract_minutiae_xytq(unsigned char**, int*, int, unsigned char*);
-//int mdt_encode_minutiae(unsigned char**, int*, MINUTIAE*);
-/*
-int decode_grayscale_image(int *oimg_type,
-	unsigned char **odata, int *olen,
-	int *ow, int *oh, int *od, int *oppi);
-//, int *ointrlvflag, int *hor_sampfctr, int *vrt_sampfctr, int *on_cmpnts);
-*/
+int extract_minutiae_xytq(uchar**, int*, uchar*, int, int);
+int decode_grayscale_image(uchar**, int*, int*, int*, int*, int*, uchar*, int);
+int mdt_encode_minutiae(uchar**, int*, const MINUTIAE*);
 
 // CREATE FUNCTION mindt(wsq bytea, boost boolean) RETURNS bytea
 PG_FUNCTION_INFO_V1(pg_min_detect);
@@ -33,13 +28,13 @@ pg_min_detect(PG_FUNCTION_ARGS)
 	bool boost;
 	bytea *res;
 	unsigned isize, osize = 0;
-	unsigned char *idata, *odata = NULL;
+	uchar *idata, *odata = NULL;
 	int ret;
 
 	// read WSQ parameter
 	wsq = PG_GETARG_BYTEA_P(0);
 	isize = VARSIZE(wsq) - VARHDRSZ;
-	idata = (unsigned char *) VARDATA(wsq);
+	idata = (uchar *) VARDATA(wsq);
 
 	if (debug > 0)
 		elog(NOTICE, "wsq: %x, isize: %d, idata: %x",
@@ -53,8 +48,7 @@ pg_min_detect(PG_FUNCTION_ARGS)
 	if (debug > 0)
 		elog(NOTICE, "Extracting minutiae...");
 
-	if ((ret = extract_minutiae_xytq(&odata, (int *) &osize,
-			boost, idata))) {
+	if ((ret = extract_minutiae_xytq(&odata, (int *) &osize, idata, isize, boost))) {
 		PG_RETURN_NULL();
 	}
 
@@ -72,34 +66,30 @@ pg_min_detect(PG_FUNCTION_ARGS)
 	PG_RETURN_BYTEA_P(res);
 }
 
-int extract_minutiae_xytq(unsigned char **odata, int *osize, int boost, unsigned char *idata) {
+int extract_minutiae_xytq(uchar **odata, int *osize,
+	uchar *idata, int isize, int boost) {
 
-	unsigned char *bdata;
-	int img_type;
-	int ilen, iw, ih, id, ippi, bw, bh, bd;
-	double ippmm;
-	//int img_idc, img_imp;
-	int *direction_map, *low_contrast_map, *low_flow_map;
-	int *high_curve_map, *quality_map;
-	int map_w, map_h;
 	int ret;
-	MINUTIAE *minutiae;
-	//ANSI_NIST *ansi_nist;
-	//RECORD *imgrecord;
-	//int imgrecord_i;
 
-	// FIXME: remover isso
-/*
-	*odata = NULL;
-	*osize = 0;
-	exit(0);
-*/
+	uchar *ndata;
+	int nsize, iw, ih, id, ippi;
+	double ippmm;
+
+	MINUTIAE *minutiae;
+	int *quality_map, *direction_map;
+	int *low_contrast_map, *low_flow_map, *high_curve_map;
+	int map_w, map_h;
+	uchar *bdata;
+	int bw, bh, bd;
+
+	uchar *mdata;
+	int msize;
 
 	// 1. READ FINGERPRINT WSQ IMAGE FROM FILE INTO MEMORY
+	elog(NOTICE, "1. READ FINGERPRINT WSQ IMAGE FROM FILE INTO MEMORY");
 
 	// Decode the image data from memory
-	if ((ret = decode_grayscale_image(
-			&img_type, &idata, &ilen, &iw, &ih, &id, &ippi))) {
+	if ((ret = decode_grayscale_image(&ndata, &nsize, &iw, &ih, &id, &ippi, idata, isize))) {
 		exit(ret);
 	}
 
@@ -110,23 +100,26 @@ int extract_minutiae_xytq(unsigned char **odata, int *osize, int boost, unsigned
 		ippmm = ippi / (double) MM_PER_INCH;
 
 	// 2. ENHANCE IMAGE CONTRAST IF REQUESTED
+	elog(NOTICE, "2. ENHANCE IMAGE CONTRAST IF REQUESTED");
 	if (boost)
-		trim_histtails_contrast_boost(idata, iw, ih); 
+		trim_histtails_contrast_boost(ndata, iw, ih); 
 
 	// 3. GET MINUTIAE & BINARIZED IMAGE
+	elog(NOTICE, "3. GET MINUTIAE & BINARIZED IMAGE");
 	if ((ret = get_minutiae(&minutiae, &quality_map, &direction_map,
 			&low_contrast_map, &low_flow_map, &high_curve_map,
 			&map_w, &map_h, &bdata, &bw, &bh, &bd,
-			idata, iw, ih, id, ippmm, &lfsparms_V2))) {
-		free(idata);
+			ndata, iw, ih, id, ippmm, &lfsparms_V2))) {
+		free(ndata);
 		exit(ret);
 	}
 
 	// Done with input image data
-	free(idata);
+	free(ndata);
 
 	// 4. WRITE MINUTIAE TO OUTPUT VARIABLE
-	if ((ret = mdt_encode_minutiae(&odata, &osize, minutiae))) {
+	elog(NOTICE, "4. WRITE MINUTIAE TO OUTPUT VARIABLE");
+	if ((ret = mdt_encode_minutiae(&mdata, &msize, minutiae))) {
 		free_minutiae(minutiae);
 		free(quality_map);
 		free(direction_map);
@@ -136,6 +129,13 @@ int extract_minutiae_xytq(unsigned char **odata, int *osize, int boost, unsigned
 		free(bdata);
 		exit(ret);
 	}
+
+	elog(NOTICE, "Copying data to output variables...");
+
+	*odata = mdata;
+	*osize = msize;
+
+	elog(NOTICE, "Freeing memory...");
 
 	// Done with minutiae detection maps
 	free(quality_map);
@@ -147,89 +147,80 @@ int extract_minutiae_xytq(unsigned char **odata, int *osize, int boost, unsigned
 	// Done with minutiae and binary image results
 	free_minutiae(minutiae);
 	free(bdata);
+	free(ndata);
 
 	// Exit normally
 	exit(0);
 }
 
-int decode_grayscale_image(int *oimg_type,
-	unsigned char **odata, int *olen,
-	int *ow, int *oh, int *od, int *oppi)
-//, int *ointrlvflag, int *hor_sampfctr, int *vrt_sampfctr, int *on_cmpnts)
+int decode_grayscale_image(uchar **odata, int *osize,
+	int *ow, int *oh, int *od, int *oppi, uchar *idata, int isize)
 {
 	int ret;
-	unsigned char *idata, *ndata;
-	int img_type, ilen, nlen;
-	int w, h, d, ppi, lossyflag, intrlvflag = 0, n_cmpnts;
-	//IMG_DAT *img_dat;
+	int img_type, nlen;
+	uchar *ndata;
+	int w, h, d, ppi, lossyflag;
 
-/*
-	if ((ret = image_type(&img_type, idata, ilen))) {
-		free(idata);
+	if ((ret = image_type(&img_type, idata, isize))) {
+		//free(idata);
 		return(ret);
 	}
 
 	if (img_type != WSQ_IMG) {
-		free(idata);
+		//free(idata);
 		fprintf(stderr, "ERROR : decode_image : ");
 		fprintf(stderr, "illegal image type (not WSQ) = %d\n", img_type);
 		return(-3);
 	}
 
-	if ((ret = wsq_decode_mem(&ndata, &w, &h, &d, &ppi, &lossyflag, idata, ilen))){
-		free(idata);
+	if ((ret = wsq_decode_mem(&ndata, &w, &h, &d, &ppi, &lossyflag, idata, isize))) {
+		//free(idata);
 		return(ret);
 	}
 
 	nlen = w * h;
-	// Pix depth always 8 for WSQ ...
-	n_cmpnts = 1;
-//	hor_sampfctr[0] = 1;
-//	vrt_sampfctr[0] = 1;
 
-	free(idata);
+	//free(idata);
 
-	*oimg_type = img_type;
 	*odata = ndata;
-	*olen = nlen;
+	*osize = nlen;
 	*ow = w;
 	*oh = h;
 	*od = d;
 	*oppi = ppi;
-//	*ointrlvflag = intrlvflag;
-//	*on_cmpnts = n_cmpnts;
 
 	// Only desire grayscale images ...
-	if(d != 8){
-		free(idata);
+	if (d != 8){
+		//free(idata);
 		fprintf(stderr, "ERROR : read_and_decode_grayscale_image : ");
 		fprintf(stderr, "image depth : %d != 8\n", d);
 		return(-4);
 	}
-*/
+
 	return(0);
 }
 
 // Grava as minúcias em formato binário próprio (MDT).
-int mdt_encode_minutiae(unsigned char **odata, int *osize, const MINUTIAE *minutiae)
+int mdt_encode_minutiae(uchar **odata, int *osize, const MINUTIAE *minutiae)
 {
 	unsigned i, qty, ox, oy, ot, oq;
 	MINUTIA *minutia;
-	ushort *mdt, *pmdt, len;
+	uchar *mdt, *pmdt;
+	int len;
 
 	qty = minutiae->num;
 
 	if (debug > 0)
 		elog(NOTICE, "minutiae->num = %d", qty);
-/*
-	len = 1 + qty * 4;
-	mdt = palloc(sizeof(ushort) * len);
+
+	len = 1 + qty * 4; // header + 4 valores por minúcia
+	mdt = malloc(sizeof(ushort) * len);
 	pmdt = mdt;
 	//memset(mdt, 0, sizeof(ushort) * siz);
 	*pmdt++ = qty;
 	for (i = 0; i < qty; i++) {
 		minutia = minutiae->list[i];
-		lfs2m1_minutia_XYT(&ox, &oy, &ot, minutia);
+		lfs2m1_minutia_XYT((int*) &ox, (int*) &oy, (int*) &ot, minutia);
 		oq = sround(minutia->reliability * 100.0);
 		*pmdt++ = ox;
 		*pmdt++ = oy;
@@ -239,8 +230,9 @@ int mdt_encode_minutiae(unsigned char **odata, int *osize, const MINUTIAE *minut
 	//fwrite(mdt, sizeof(ushort), len, file);
 	//free(mdt);
 
-	odata = mdt;
-	osize = sizeof(ushort) * len;
-*/
+	*odata = mdt;
+	*osize = len; //sizeof(ushort) * len;
+
 	return(0);
 }
+
