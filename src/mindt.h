@@ -161,6 +161,8 @@ int decode_grayscale_image(uchar **odata, int *osize,
 	uchar *ndata;
 	int w, h, d, ppi, lossyflag;
 
+	// FIXME: dá incompatibilidade com PNG...
+/*
 	if ((ret = image_type(&img_type, idata, isize))) {
 		//free(idata);
 		return(ret);
@@ -172,6 +174,7 @@ int decode_grayscale_image(uchar **odata, int *osize,
 		fprintf(stderr, "illegal image type (not WSQ) = %d\n", img_type);
 		return(-3);
 	}
+*/
 
 	if ((ret = wsq_decode_mem(&ndata, &w, &h, &d, &ppi, &lossyflag, idata, isize))) {
 		//free(idata);
@@ -210,11 +213,13 @@ int mdt_encode_minutiae(uchar **odata, int *osize, const MINUTIAE *minutiae)
 
 	qty = minutiae->num;
 
-	if (debug > 0)
-		elog(NOTICE, "minutiae->num = %d", qty);
+	if (debug > 0) {
+		elog(NOTICE, "Total de minúcias: %d", qty);
+		elog(NOTICE, "No =>  X   Y   T   Q", i+1, ox, oy, ot, oq);
+	}
 
 	len = 1 + qty * 4; // header + 4 valores por minúcia
-	mdt = malloc(sizeof(ushort) * len);
+	mdt = palloc(sizeof(ushort) * len);
 	pmdt = mdt;
 	//memset(mdt, 0, sizeof(ushort) * siz);
 	*pmdt++ = qty;
@@ -222,6 +227,8 @@ int mdt_encode_minutiae(uchar **odata, int *osize, const MINUTIAE *minutiae)
 		minutia = minutiae->list[i];
 		lfs2m1_minutia_XYT((int*) &ox, (int*) &oy, (int*) &ot, minutia);
 		oq = sround(minutia->reliability * 100.0);
+		if (debug > 0)
+			elog(NOTICE, "%2d => %3d %3d %3d %2d", i+1, ox, oy, ot, oq);
 		*pmdt++ = ox;
 		*pmdt++ = oy;
 		*pmdt++ = ot;
