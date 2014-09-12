@@ -20,7 +20,7 @@ do
 	d="$tempdir/hex/$c.hex"
 	echo "$c"
 	xxd -p $a | tr -d "\n" > $d
-	(echo -ne "$c\t\\\\x"; cat $d) | $PSQL -c "COPY $tabela (id, pgm) FROM STDIN"
+	(echo -ne "$c\t\\\\\x"; cat $d) | $PSQL -c "COPY $tabela (id, pgm) FROM STDIN"
 done
 
 # WSQ
