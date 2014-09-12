@@ -24,7 +24,7 @@ do
 done
 
 # WSQ
-$PSQL -c "UPDATE $tabela SET wsq = cwsq(pgm, 0.75, 300, 300, 8, null)"
+$PSQL -c "UPDATE $tabela SET wsq = cwsq(pgm, 0.85, 300, 300, 8, null)"
 
 # MDT
 $PSQL -c "UPDATE $tabela SET mdt = mindt(wsq, true)"

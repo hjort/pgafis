@@ -17,12 +17,10 @@ do
 	d="$tempdir/pgm/$c.hex"
 	e="$tempdir/pgm/$c.pgm"
 	echo "$c"
-	$PSQL -c "SELECT encode(pgm, 'hex') FROM $tabela" -At | tr -d '\n' > $d
+	$PSQL -c "SELECT encode(pgm, 'hex') FROM $tabela WHERE id = '$c'" -At | tr -d '\n' > $d
 	xxd -p -r $d > $e
 done
-ls -lah "$tempdir/pgm"
-
-exit 0
+ls -la "$tempdir/pgm"
 
 # WSQ
 for a in ../samples/wsq/*.wsq
@@ -32,10 +30,15 @@ do
 	d="$tempdir/wsq/$c.hex"
 	e="$tempdir/wsq/$c.wsq"
 	echo "$c"
-	$PSQL -c "SELECT encode(wsq, 'hex') FROM $tabela" -At | tr -d '\n' > $d
+	$PSQL -c "SELECT encode(wsq, 'hex') FROM $tabela WHERE id = '$c'" -At | tr -d '\n' > $d
 	xxd -p -r $d > $e
 done
-ls -lah "$tempdir/wsq"
+ls -la "$tempdir/wsq"
+
+#hd /tmp/pgafis/wsq/101_1.wsq | head -15; echo; hd ../samples/wsq/101_1.wsq | head -15
+#diff /tmp/pgafis/wsq/101_1.wsq ../samples/wsq/101_1.wsq
+
+exit 0
 
 # MDT
 $PSQL -c "SELECT id, mdt2text(mdt) FROM $tabela ORDER BY id"
