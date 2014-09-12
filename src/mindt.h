@@ -9,6 +9,7 @@
 /*
 SELECT mindt(wsq) FROM fingers;
 SELECT mindt(wsq, true) FROM fingers;
+UPDATE fingers SET mdt = mindt(wsq, true);
 */
 
 #include <lfs.h>
