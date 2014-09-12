@@ -7,7 +7,7 @@ PSQL='/usr/local/pgsql/bin/psql afis'
 
 # recriação das estruturas
 $PSQL -c "DROP TABLE IF EXISTS $tabela"
-$PSQL -c "CREATE TABLE $tabela (id char(5) primary key, pgm bytea, wsq bytea, mdt bytea)"
+$PSQL -c "CREATE TABLE $tabela (id char(5) primary key, pgm bytea, wsq bytea, mdt bytea, xyt text)"
 rm -rf $tempdir
 mkdir -p $tempdir/hex
 
@@ -29,7 +29,10 @@ $PSQL -c "UPDATE $tabela SET wsq = cwsq(pgm, 0.75, 300, 300, 8, null)"
 # MDT
 $PSQL -c "UPDATE $tabela SET mdt = mindt(wsq, true)"
 
+# XYT
+$PSQL -c "UPDATE $tabela SET xyt = mdt2text(mdt)"
+
 # verificação dos valores
-$PSQL -c "select id, length(pgm) as pgm_bytes, length(wsq) as wsq_bytes, length(mdt) as mdt_bytes from fingerprints limit 5"
+$PSQL -c "SELECT id, length(pgm) AS pgm_bytes, length(wsq) AS wsq_bytes, length(mdt) AS mdt_bytes, length(xyt) AS xyt_chars FROM fingerprints LIMIT 5"
 
 exit 0
