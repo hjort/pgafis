@@ -6,9 +6,10 @@
  * Rodrigo Hjort <rodrigo.hjort@gmail.com>
  */
 
-struct xyt_struct * load_xyt(char*);
-struct xyt_struct * load_xyt_binary(uchar*, unsigned);
+struct xyt_struct *load_xyt(char*);
+struct xyt_struct *load_xyt_binary(uchar*, unsigned);
 int is_minutiae_data(uchar*, unsigned);
+struct xytq_struct *load_xytq_binary(uchar*, unsigned);
 
 struct xyt_struct * load_xyt(char *str)
 {
@@ -174,3 +175,43 @@ int is_minutiae_data(uchar *data, unsigned size)
 	elen = 1 + qty * 4; // header + 4 valores por minúcia
 	return(size == elen);
 }
+
+struct xytq_struct * load_xytq_binary(uchar *data, unsigned size)
+{
+	unsigned i, qty, ox, oy, ot, oq;
+	uchar *pdata;
+	struct xytq_struct *xytq_s;
+
+	pdata = data;
+	qty = *pdata;
+
+	xytq_s = (struct xytq_struct *) malloc(sizeof(struct xytq_struct));
+	if (xytq_s == XYTQ_NULL)
+	{
+		elog(ERROR, "Allocation failure while loading minutiae buffer");
+		return XYTQ_NULL;
+	}
+
+	if (debug > 0) {
+		elog(NOTICE, "Total de minúcias: %d", qty);
+		elog(DEBUG1, "No =>  X   Y   T   Q");
+	}
+
+	xytq_s->nrows = qty;
+	for (i = 0; i < qty; i++)
+	{
+		ox = *pdata++;
+		oy = *pdata++;
+		ot = *pdata++;
+		oq = *pdata++;
+		//if (debug > 0)
+		//	elog(DEBUG1, "%2d => %3d %3d %3d %2d", i+1, ox, oy, ot, oq);
+		xytq_s->xcol[i] = ox;
+		xytq_s->ycol[i] = oy;
+		xytq_s->thetacol[i] = ot;
+		xytq_s->qualitycol[i] = oq;
+	}
+
+	return xytq_s;
+}
+
