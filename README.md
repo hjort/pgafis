@@ -8,54 +8,74 @@ pgAFIS - Automated Fingerprint Identification System Support for PostgreSQL
 # Sample fingerprints data
 
 ```sql
-afis=#
-SELECT id, arq, xyt FROM dedos;
-
- id |    arq    |      xyt       
-----+-----------+----------------
-  1 | 101_1.xyt | 45 62 5 72    +
-    |           | 56 280 118 17 +
-    |           | 73 71 95 78 ...
-  2 | 101_2.xyt | 18 39 5 15    +
-    |           | 32 257 118 82 +
-    |           | 44 47 95 67 ...
-(...)
+afis=> \d fingerprints
+    Table "public.fingerprints"
+ Column |     Type     | Modifiers 
+--------+--------------+-----------
+ id     | character(5) | not null
+ pgm    | bytea        | 
+ wsq    | bytea        | 
+ mdt    | bytea        | 
+Indexes:
+    "fingerprints_pkey" PRIMARY KEY, btree (id)
 ```
-- "xyt" column holds fingerprint templates in XYT format
+
+```sql
+afis=>
+SELECT id,
+  length(pgm) AS raw_bytes,
+  length(wsq) AS wsq_bytes,
+  length(mdt) AS mdt_bytes
+FROM fingerprints
+LIMIT 5;
+
+  id   | raw_bytes | wsq_bytes | mdt_bytes 
+-------+-----------+-----------+-----------
+ 101_1 |    180029 |      9002 |       329
+ 101_2 |    180029 |      8808 |       261
+ 101_3 |    180029 |      8985 |       313
+ 101_4 |    180029 |      9503 |       365
+ 101_5 |    180029 |      8857 |       317
+(5 rows)
+```
+- "pgm" stores original raw fingerprint images (PGM)
+- "wsq" stores compressed fingerprint images (WSQ)
+- "mdt" stores fingerprint templates in XYT format
 
 
 # Verification (1:1)
 
 ```sql
-afis=#
-SELECT (bz_match(a.xyt, b.xyt) >= 30) AS match
-FROM dedos a, dedos b
-WHERE a.id = 1 AND b.id = 6;
+afis=>
+SELECT (bz_match(a.mdt, b.mdt) >= 40) AS match
+FROM fingerprints a, fingerprints b
+WHERE a.id = '101_1' AND b.id = '101_6';
 
  match 
 -------
  t
 (1 row)
 ```
-- given two fingerprints, they can be considered the same according to a stated threshold value (e.g., 30)
+- given two fingerprints, they can be considered the same according to a stated threshold value (e.g., 40)
 
 
 # Identification (1:N)
 
 ```sql
-afis=#
-SELECT a.arq AS arq1, b.arq AS arq2,
-  bz_match(a.xyt, b.xyt) AS match
-FROM dedos a, dedos b
-WHERE a.id = 1
-  AND bz_match(a.xyt, b.xyt) > 20
+afis=>
+SELECT a.id AS probe, b.id AS sample,
+  bz_match(a.mdt, b.mdt) AS match
+FROM fingerprints a, fingerprints b
+WHERE a.id = '101_1' AND b.id != a.id
+  AND bz_match(a.mdt, b.mdt) >= 40
 LIMIT 3;
 
-   arq1    |   arq2    | match 
------------+-----------+-------
- 101_1.xyt | 101_1.xyt |   144
- 101_1.xyt | 101_2.xyt |    24
- 101_1.xyt | 101_6.xyt |    40
+ probe | sample | match 
+-------+--------+-------
+ 101_1 | 101_3  |    45
+ 101_1 | 101_4  |    57
+ 101_1 | 101_6  |    47
 (3 rows)
 ```
-- sequential scan is made on the table, but so far as a given number of templates (e.g, 3) above the defined threshold (e.g, 20) is reached
+- sequential scan is performed on the table, but so far as a given number of templates (e.g., 3) having a match score above the defined threshold (e.g., 40)
+
