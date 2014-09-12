@@ -15,6 +15,7 @@ SELECT mindt(wsq, true) FROM fingers;
 #include <imgtype.h>
 #include <imgboost.h>
 
+int is_wsq_type(uchar*, const int);
 int extract_minutiae_xytq(uchar**, int*, uchar*, int, int);
 int decode_grayscale_image(uchar**, int*, int*, int*, int*, int*, uchar*, int);
 int mdt_encode_minutiae(uchar**, int*, const MINUTIAE*);
@@ -45,10 +46,16 @@ pg_min_detect(PG_FUNCTION_ARGS)
 	if (debug > 0)
 		elog(NOTICE, "boost: %d", boost);
 
+	if (!is_wsq_type(idata, isize)) {
+		elog(ERROR, "Illegal image type (not WSQ)");
+		PG_RETURN_NULL();
+	}
+
 	if (debug > 0)
 		elog(NOTICE, "Extracting minutiae...");
 
-	if ((ret = extract_minutiae_xytq(&odata, (int *) &osize, idata, isize, boost))) {
+	if ((ret = extract_minutiae_xytq(&odata, (int *) &osize,
+			idata, isize, boost))) {
 		PG_RETURN_NULL();
 	}
 
@@ -62,13 +69,30 @@ pg_min_detect(PG_FUNCTION_ARGS)
 	// copy data to output buffer
 	//memset(VARDATA(res), 0, osize);
 	memcpy(VARDATA(res), odata, osize);
+	
+	free(odata);
 
 	PG_RETURN_BYTEA_P(res);
 }
 
-int extract_minutiae_xytq(uchar **odata, int *osize,
-	uchar *idata, int isize, int boost) {
+int is_wsq_type(uchar *idata, const int ilen)
+{
+   int ret;
+   ushort marker;
+   uchar *cbufptr, *ebufptr;
 
+   cbufptr = idata;
+   ebufptr = idata + ilen;
+
+   if ((ret = getc_ushort(&marker, &cbufptr, ebufptr)))
+      return(ret);
+   
+   return(marker == SOI_WSQ);
+}
+
+int extract_minutiae_xytq(uchar **odata, int *osize,
+	uchar *idata, int isize, int boost)
+{
 	int ret;
 
 	uchar *ndata;
@@ -89,8 +113,9 @@ int extract_minutiae_xytq(uchar **odata, int *osize,
 	elog(NOTICE, "1. READ FINGERPRINT WSQ IMAGE FROM FILE INTO MEMORY");
 
 	// Decode the image data from memory
-	if ((ret = decode_grayscale_image(&ndata, &nsize, &iw, &ih, &id, &ippi, idata, isize))) {
-		exit(ret);
+	if ((ret = decode_grayscale_image(&ndata, &nsize,
+			&iw, &ih, &id, &ippi, idata, isize))) {
+		return(ret);
 	}
 
 	// If image ppi not defined, then assume 500
@@ -111,7 +136,7 @@ int extract_minutiae_xytq(uchar **odata, int *osize,
 			&map_w, &map_h, &bdata, &bw, &bh, &bd,
 			ndata, iw, ih, id, ippmm, &lfsparms_V2))) {
 		free(ndata);
-		exit(ret);
+		return(ret);
 	}
 
 	// Done with input image data
@@ -127,7 +152,7 @@ int extract_minutiae_xytq(uchar **odata, int *osize,
 		free(low_flow_map);
 		free(high_curve_map);
 		free(bdata);
-		exit(ret);
+		return(ret);
 	}
 
 	elog(NOTICE, "Copying data to output variables...");
@@ -147,34 +172,18 @@ int extract_minutiae_xytq(uchar **odata, int *osize,
 	// Done with minutiae and binary image results
 	free_minutiae(minutiae);
 	free(bdata);
-	free(ndata);
+//	free(ndata);
 
 	// Exit normally
-	exit(0);
+	return(0);
 }
 
 int decode_grayscale_image(uchar **odata, int *osize,
 	int *ow, int *oh, int *od, int *oppi, uchar *idata, int isize)
 {
 	int ret;
-	int img_type, nlen;
 	uchar *ndata;
-	int w, h, d, ppi, lossyflag;
-
-	// FIXME: dá incompatibilidade com PNG...
-/*
-	if ((ret = image_type(&img_type, idata, isize))) {
-		//free(idata);
-		return(ret);
-	}
-
-	if (img_type != WSQ_IMG) {
-		//free(idata);
-		fprintf(stderr, "ERROR : decode_image : ");
-		fprintf(stderr, "illegal image type (not WSQ) = %d\n", img_type);
-		return(-3);
-	}
-*/
+	int w, h, d, ppi, lossyflag, nlen;
 
 	if ((ret = wsq_decode_mem(&ndata, &w, &h, &d, &ppi, &lossyflag, idata, isize))) {
 		//free(idata);
@@ -193,10 +202,11 @@ int decode_grayscale_image(uchar **odata, int *osize,
 	*oppi = ppi;
 
 	// Only desire grayscale images ...
-	if (d != 8){
+	if (d != 8) {
 		//free(idata);
-		fprintf(stderr, "ERROR : read_and_decode_grayscale_image : ");
-		fprintf(stderr, "image depth : %d != 8\n", d);
+		//fprintf(stderr, "ERROR : read_and_decode_grayscale_image : ");
+		//fprintf(stderr, "image depth : %d != 8\n", d);
+		elog(NOTICE, "image depth : %d != 8", d);
 		return(-4);
 	}
 
@@ -215,12 +225,13 @@ int mdt_encode_minutiae(uchar **odata, int *osize, const MINUTIAE *minutiae)
 
 	if (debug > 0) {
 		elog(NOTICE, "Total de minúcias: %d", qty);
-		elog(NOTICE, "No =>  X   Y   T   Q", i+1, ox, oy, ot, oq);
+		elog(NOTICE, "No =>  X   Y   T   Q");
 	}
 
 	len = 1 + qty * 4; // header + 4 valores por minúcia
-	mdt = palloc(sizeof(ushort) * len);
+	mdt = malloc(sizeof(ushort) * len);
 	pmdt = mdt;
+	
 	//memset(mdt, 0, sizeof(ushort) * siz);
 	*pmdt++ = qty;
 	for (i = 0; i < qty; i++) {
@@ -242,4 +253,3 @@ int mdt_encode_minutiae(uchar **odata, int *osize, const MINUTIAE *minutiae)
 
 	return(0);
 }
-
