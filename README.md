@@ -1,14 +1,13 @@
 pgafis
 ======
 
-pgAFIS - Automated Fingerprint Identification System Support for PostgreSQL
+pgAFIS - Automated Fingerprint Identification System support for PostgreSQL
 
 ![fingers](./samples/fingers.jpg "Sample Fingerprints")
 
 # Sample fingerprints data
 
 ```sql
-afis=> \d fingerprints
     Table "public.fingerprints"
  Column |     Type     | Modifiers 
 --------+--------------+-----------
@@ -19,6 +18,9 @@ afis=> \d fingerprints
 Indexes:
     "fingerprints_pkey" PRIMARY KEY, btree (id)
 ```
+- "pgm" stores original raw fingerprint images (PGM)
+- "wsq" stores compressed fingerprint images (WSQ)
+- "mdt" stores fingerprint templates in XYTQ own binary format (MDT)
 
 ```sql
 afis=>
@@ -38,10 +40,6 @@ LIMIT 5;
  101_5 |    180029 |      8857 |       317
 (5 rows)
 ```
-- "pgm" stores original raw fingerprint images (PGM)
-- "wsq" stores compressed fingerprint images (WSQ)
-- "mdt" stores fingerprint templates in XYTQ format
-
 
 # Acquisition
 
@@ -78,7 +76,7 @@ WHERE a.id = '101_1' AND b.id = '101_6';
  t
 (1 row)
 ```
-- given two fingerprints, they can be considered the same according to a stated threshold value (e.g., 40)
+- given two fingerprint templates, they can be considered the same according to a threshold value (e.g., 40) defined by the application
 
 
 # Identification (1:N)
