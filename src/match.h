@@ -75,7 +75,7 @@ PG_FUNCTION_INFO_V1(pg_bz_match_bytea);
 Datum
 pg_bz_match_bytea(PG_FUNCTION_ARGS)
 {
-	bytea *wsq1, *wsq2;
+	bytea *mdt1, *mdt2;
 	unsigned size1, size2;
 	unsigned char *data1, *data2;
 	int32 score = 0;
@@ -83,18 +83,18 @@ pg_bz_match_bytea(PG_FUNCTION_ARGS)
 	struct xyt_struct *ps = XYT_NULL; // probe structure
 	struct xyt_struct *gs = XYT_NULL; // gallery structure
 
-	wsq1 = PG_GETARG_BYTEA_P(0);
-	size1 = VARSIZE(wsq1) - VARHDRSZ;
-	data1 = (unsigned char *) VARDATA(wsq1);
+	mdt1 = PG_GETARG_BYTEA_P(0);
+	size1 = VARSIZE(mdt1) - VARHDRSZ;
+	data1 = (unsigned char *) VARDATA(mdt1);
 
 	if (!is_minutiae_data(data1, size1)) {
 		elog(ERROR, "First argument does not contain minutiae data");
 		PG_RETURN_NULL();
 	}	
 
-	wsq2 = PG_GETARG_BYTEA_P(1);
-	size2 = VARSIZE(wsq2) - VARHDRSZ;
-	data2 = (unsigned char *) VARDATA(wsq2);
+	mdt2 = PG_GETARG_BYTEA_P(1);
+	size2 = VARSIZE(mdt2) - VARHDRSZ;
+	data2 = (unsigned char *) VARDATA(mdt2);
 
 	if (!is_minutiae_data(data2, size2)) {
 		elog(ERROR, "Second argument does not contain minutiae data");

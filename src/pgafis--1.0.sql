@@ -18,6 +18,11 @@ CREATE FUNCTION mindt(bytea, boolean)
 	AS 'MODULE_PATHNAME', 'pg_min_detect'
         LANGUAGE C STRICT IMMUTABLE;
 
+CREATE FUNCTION mdt2text(bytea)
+	RETURNS text
+	AS 'MODULE_PATHNAME', 'pg_mdt_text'
+        LANGUAGE C STRICT IMMUTABLE;
+
 CREATE FUNCTION bz_match(text, text)
 	RETURNS int
 	AS 'MODULE_PATHNAME', 'pg_bz_match_text'
