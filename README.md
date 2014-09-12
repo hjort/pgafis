@@ -40,8 +40,30 @@ LIMIT 5;
 ```
 - "pgm" stores original raw fingerprint images (PGM)
 - "wsq" stores compressed fingerprint images (WSQ)
-- "mdt" stores fingerprint templates in XYT format
+- "mdt" stores fingerprint templates in XYTQ format
 
+
+# Acquisition
+
+## Image Compression (WSQ)
+
+```sql
+afis=>
+UPDATE fingerprints
+SET wsq = cwsq(pgm, 0.75, 300, 300, 8, null)
+WHERE wsq IS NULL;
+```
+- compressed image in WSQ format is generated from original fingerprint raw image (PGM format)
+
+## Feature Extraction (XYT)
+
+```sql
+afis=>
+UPDATE fingerprints
+SET mdt = mindt(wsq, true)
+WHERE mdt IS NULL;
+```
+- minutiae data are extracted from compressed WSQ image and stored in own binary format (MDT)
 
 # Verification (1:1)
 
