@@ -22,6 +22,9 @@ do
 done
 ls -la "$tempdir/pgm"
 
+diff $tempdir/pgm/101_1.pgm ../samples/pgm/101_1.pgm
+hd $tempdir/pgm/101_1.pgm | head -15; echo; hd ../samples/pgm/101_1.pgm | head -15
+
 # WSQ
 for a in ../samples/wsq/*.wsq
 do
@@ -35,8 +38,16 @@ do
 done
 ls -la "$tempdir/wsq"
 
-#hd /tmp/pgafis/wsq/101_1.wsq | head -15; echo; hd ../samples/wsq/101_1.wsq | head -15
-#diff /tmp/pgafis/wsq/101_1.wsq ../samples/wsq/101_1.wsq
+diff $tempdir/wsq/101_1.wsq ../samples/wsq/101_1.wsq
+hd $tempdir/wsq/101_1.wsq | head -15; echo; hd ../samples/wsq/101_1.wsq | head -15
+
+# 12/09: testes de efetividade do gerador de WSQ/XYT
+dpyimage $tempdir/wsq/101_1.wsq &
+dpyimage ../samples/wsq/101_1.wsq &
+mindtct -b -m1 $tempdir/wsq/101_1.wsq /tmp/pgafis/a
+mindtct -b -m1 ../samples/wsq/101_1.wsq /tmp/pgafis/b
+ls -la /tmp/pgafis/
+for i in brw dm hcm lcm lfm min qm xyt; do echo "[$i]"; diff /tmp/pgafis/a.$i /tmp/pgafis/b.$i; done | less
 
 exit 0
 

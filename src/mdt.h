@@ -66,7 +66,7 @@ int convert_xyt_binary_text(uchar **odata, unsigned *osize, uchar *idata, unsign
 	struct xytq_struct * xytq_s;
 	int total_minutiae, expected_size, i;
 	char xyt_line[MAX_LINE_LENGTH];
-	uchar *txt;
+	char *txt;
 	unsigned len = 0;
 
 	xytq_s = load_xytq_binary(idata, isize);
@@ -104,7 +104,7 @@ int convert_xyt_binary_text(uchar **odata, unsigned *osize, uchar *idata, unsign
 	if (xytq_s != XYTQ_NULL)
 		free((char *) xytq_s);
 
-	*odata = txt;
+	*odata = (uchar *) txt;
 	*osize = len;
 
 	return(0);
