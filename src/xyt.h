@@ -7,9 +7,9 @@
  */
 
 struct xyt_struct * load_xyt(char*);
-struct xyt_struct * load_xyt_binary(unsigned char *, unsigned);
+struct xyt_struct * load_xyt_binary(uchar*, unsigned);
+int is_minutiae_data(uchar*, unsigned);
 
-// load_xyt
 struct xyt_struct * load_xyt(char *str)
 {
 	int nminutiae; // número da linha da minúcia
@@ -122,14 +122,55 @@ struct xyt_struct * load_xyt(char *str)
 	return xyt_s;
 }
 
-// load_xyt_binary
-struct xyt_struct * load_xyt_binary(unsigned char *data, unsigned size)
+struct xyt_struct * load_xyt_binary(uchar *data, unsigned size)
 {
+	unsigned i, qty, ox, oy, ot, oq;
+	uchar *pdata;
 	struct xyt_struct * xyt_s;
-	//struct xytq_struct * xytq_s;
+	struct xytq_struct * xytq_s;
 
-	xyt_s = XYT_NULL;
+	pdata = data;
+	qty = *pdata;
 
+	xytq_s = (struct xytq_struct *) malloc(sizeof(struct xytq_struct));
+	if (xytq_s == XYTQ_NULL)
+	{
+		elog(ERROR, "Allocation failure while loading minutiae buffer");
+		return XYT_NULL;
+	}
+
+	if (debug > 0) {
+		elog(NOTICE, "Total de minúcias: %d", qty);
+		elog(DEBUG1, "No =>  X   Y   T   Q");
+	}
+
+	xytq_s->nrows = qty;
+	for (i = 0; i < qty; i++)
+	{
+		ox = *pdata++;
+		oy = *pdata++;
+		ot = *pdata++;
+		oq = *pdata++;
+		if (debug > 0)
+			elog(DEBUG1, "%2d => %3d %3d %3d %2d", i+1, ox, oy, ot, oq);
+		xytq_s->xcol[i] = ox;
+		xytq_s->ycol[i] = oy;
+		xytq_s->thetacol[i] = ot;
+		xytq_s->qualitycol[i] = oq;
+	}
+
+	xyt_s = bz_prune(xytq_s, 0);
+
+	if (xytq_s != XYTQ_NULL)
+		free((char *) xytq_s);
+	
 	return xyt_s;
 }
 
+int is_minutiae_data(uchar *data, unsigned size)
+{
+	int elen, qty;
+	qty = *data;
+	elen = 1 + qty * 4; // header + 4 valores por minúcia
+	return(size == elen);
+}

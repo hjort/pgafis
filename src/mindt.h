@@ -226,7 +226,7 @@ int mdt_encode_minutiae(uchar **odata, int *osize, const MINUTIAE *minutiae)
 
 	if (debug > 0) {
 		elog(NOTICE, "Total de minúcias: %d", qty);
-		elog(NOTICE, "No =>  X   Y   T   Q");
+		elog(DEBUG1, "No =>  X   Y   T   Q");
 	}
 
 	len = 1 + qty * 4; // header + 4 valores por minúcia
@@ -240,7 +240,7 @@ int mdt_encode_minutiae(uchar **odata, int *osize, const MINUTIAE *minutiae)
 		lfs2m1_minutia_XYT((int*) &ox, (int*) &oy, (int*) &ot, minutia);
 		oq = sround(minutia->reliability * 100.0);
 		if (debug > 0)
-			elog(NOTICE, "%2d => %3d %3d %3d %2d", i+1, ox, oy, ot, oq);
+			elog(DEBUG1, "%2d => %3d %3d %3d %2d", i+1, ox, oy, ot, oq);
 		*pmdt++ = ox;
 		*pmdt++ = oy;
 		*pmdt++ = ot;

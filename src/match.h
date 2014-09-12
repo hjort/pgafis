@@ -11,7 +11,7 @@ SELECT (bz_match(a.xyt, b.xyt) >= 30) AS match
 FROM dedos a, dedos b
 WHERE a.id = 1 AND b.id = 6;
 
-SELECT bz_match(wsq, wsq) from fingers;
+SELECT bz_match(mdt, mdt) FROM fingers;
 */
 
 #define bz_match nbis_bz_match
@@ -87,9 +87,19 @@ pg_bz_match_bytea(PG_FUNCTION_ARGS)
 	size1 = VARSIZE(wsq1) - VARHDRSZ;
 	data1 = (unsigned char *) VARDATA(wsq1);
 
+	if (!is_minutiae_data(data1, size1)) {
+		elog(ERROR, "First argument does not contain minutiae data");
+		PG_RETURN_NULL();
+	}	
+
 	wsq2 = PG_GETARG_BYTEA_P(1);
 	size2 = VARSIZE(wsq2) - VARHDRSZ;
 	data2 = (unsigned char *) VARDATA(wsq2);
+
+	if (!is_minutiae_data(data2, size2)) {
+		elog(ERROR, "Second argument does not contain minutiae data");
+		PG_RETURN_NULL();
+	}	
 
 	ps = load_xyt_binary(data1, size1);
 	if (ps != XYT_NULL)
@@ -108,4 +118,3 @@ pg_bz_match_bytea(PG_FUNCTION_ARGS)
 
 	PG_RETURN_INT32(score);
 }
-
