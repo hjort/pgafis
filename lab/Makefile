@@ -1,6 +1,6 @@
 CFLAGS=-I/opt/nbis-4.2.0/include -L/opt/nbis-4.2.0/lib -g
 
-all: bz
+all: bz ct uc us
 
 bz: bz.c
 	gcc bz.c ${CFLAGS} -lbozorth3 -lm -o bz
