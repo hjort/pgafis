@@ -111,7 +111,7 @@ int extract_minutiae_xytq(uchar **odata, int *osize,
 	int msize;
 
 	// 1. READ FINGERPRINT WSQ IMAGE FROM FILE INTO MEMORY
-	elog(NOTICE, "1. READ FINGERPRINT WSQ IMAGE FROM FILE INTO MEMORY");
+	//elog(NOTICE, "1. READ FINGERPRINT WSQ IMAGE FROM FILE INTO MEMORY");
 
 	// Decode the image data from memory
 	if ((ret = decode_grayscale_image(&ndata, &nsize,
@@ -126,12 +126,12 @@ int extract_minutiae_xytq(uchar **odata, int *osize,
 		ippmm = ippi / (double) MM_PER_INCH;
 
 	// 2. ENHANCE IMAGE CONTRAST IF REQUESTED
-	elog(NOTICE, "2. ENHANCE IMAGE CONTRAST IF REQUESTED");
+	//elog(NOTICE, "2. ENHANCE IMAGE CONTRAST IF REQUESTED");
 	if (boost)
 		trim_histtails_contrast_boost(ndata, iw, ih); 
 
 	// 3. GET MINUTIAE & BINARIZED IMAGE
-	elog(NOTICE, "3. GET MINUTIAE & BINARIZED IMAGE");
+	//elog(NOTICE, "3. GET MINUTIAE & BINARIZED IMAGE");
 	if ((ret = get_minutiae(&minutiae, &quality_map, &direction_map,
 			&low_contrast_map, &low_flow_map, &high_curve_map,
 			&map_w, &map_h, &bdata, &bw, &bh, &bd,
@@ -144,7 +144,7 @@ int extract_minutiae_xytq(uchar **odata, int *osize,
 	free(ndata);
 
 	// 4. WRITE MINUTIAE TO OUTPUT VARIABLE
-	elog(NOTICE, "4. WRITE MINUTIAE TO OUTPUT VARIABLE");
+	//elog(NOTICE, "4. WRITE MINUTIAE TO OUTPUT VARIABLE");
 	if ((ret = mdt_encode_minutiae(&mdata, &msize, minutiae))) {
 		free_minutiae(minutiae);
 		free(quality_map);
@@ -156,12 +156,12 @@ int extract_minutiae_xytq(uchar **odata, int *osize,
 		return(ret);
 	}
 
-	elog(NOTICE, "Copying data to output variables...");
+	//elog(NOTICE, "Copying data to output variables...");
 
 	*odata = mdata;
 	*osize = msize;
 
-	elog(NOTICE, "Freeing memory...");
+	//elog(NOTICE, "Freeing memory...");
 
 	// Done with minutiae detection maps
 	free(quality_map);

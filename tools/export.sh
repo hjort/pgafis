@@ -7,7 +7,7 @@ PSQL='/usr/local/pgsql/bin/psql afis'
 
 # recriação do diretório
 rm -rf $tempdir
-mkdir -p $tempdir/pgm $tempdir/wsq
+mkdir -p $tempdir/pgm $tempdir/wsq $tempdir/xyt
 
 # PGM
 for a in ../samples/pgm/*.pgm
@@ -49,10 +49,22 @@ mindtct -b -m1 ../samples/wsq/101_1.wsq /tmp/pgafis/b
 ls -la /tmp/pgafis/
 for i in brw dm hcm lcm lfm min qm xyt; do echo "[$i]"; diff /tmp/pgafis/a.$i /tmp/pgafis/b.$i; done | less
 
-exit 0
-
 # MDT
-$PSQL -c "SELECT id, mdt2text(mdt) FROM $tabela ORDER BY id"
+#$PSQL -c "SELECT id, mdt2text(mdt) FROM $tabela ORDER BY id"
+
+# XYT
+for a in ../samples/xyt/*.xyt
+do
+	b="`basename $a`"
+	c="${b/.xyt/}"
+	d="$tempdir/xyt/$c.xyt"
+	echo "$c"
+	$PSQL -c "SELECT xyt FROM $tabela WHERE id = '$c'" -At > $d
+done
+ls -la "$tempdir/xyt"
+
+diff $tempdir/xyt/101_1.xyt ../samples/xyt/101_1.xyt
+hd $tempdir/xyt/101_1.xyt | head -15; echo; hd ../samples/xyt/101_1.xyt | head -15
 
 # verificação dos valores
 #$PSQL -c "select id, length(pgm) as pgm_bytes, length(wsq) as wsq_bytes, length(mdt) as mdt_bytes from fingerprints limit 5"
