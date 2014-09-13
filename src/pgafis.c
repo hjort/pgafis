@@ -23,5 +23,5 @@ extern Datum pg_bz_match_bytea(PG_FUNCTION_ARGS);
 #include "mindt.h"
 #include "mdt.h"
 
-int debug = 1;
+int debug = 0;
 

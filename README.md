@@ -36,11 +36,11 @@ LIMIT 5;
 
   id   | pgm_bytes | wsq_bytes | mdt_bytes | xyt_chars 
 -------+-----------+-----------+-----------+-----------
- 101_1 |     90015 |     10356 |       101 |       320
- 101_2 |     90015 |     10098 |        97 |       313
- 101_3 |     90015 |     10042 |        61 |       196
- 101_4 |     90015 |     10541 |        81 |       266
- 101_5 |     90015 |     10279 |       101 |       320
+ 101_1 |     90015 |     27895 |       162 |       274
+ 101_2 |     90015 |     27602 |       186 |       312
+ 101_3 |     90015 |     27856 |       146 |       237
+ 101_4 |     90015 |     28784 |       154 |       262
+ 101_5 |     90015 |     27653 |       194 |       324
 (5 rows)
 ```
 
@@ -70,7 +70,7 @@ WHERE mdt IS NULL;
 
 ```sql
 afis=>
-SELECT (bz_match(a.mdt, b.mdt) >= 40) AS match
+SELECT (bz_match(a.mdt, b.mdt) >= 20) AS match
 FROM fingerprints a, fingerprints b
 WHERE a.id = '101_1' AND b.id = '101_6';
 
@@ -79,7 +79,7 @@ WHERE a.id = '101_1' AND b.id = '101_6';
  t
 (1 row)
 ```
-- given two fingerprint templates, they can be considered the same according to a threshold value (e.g., 40) defined by the application
+- given two fingerprint templates, they can be considered the same according to a threshold value (e.g., 20) defined by the application
 
 
 # Identification (1:N)
@@ -87,18 +87,37 @@ WHERE a.id = '101_1' AND b.id = '101_6';
 ```sql
 afis=>
 SELECT a.id AS probe, b.id AS sample,
-  bz_match(a.mdt, b.mdt) AS match
+  bz_match(a.mdt, b.mdt) AS score
 FROM fingerprints a, fingerprints b
 WHERE a.id = '101_1' AND b.id != a.id
-  AND bz_match(a.mdt, b.mdt) >= 40
+  AND bz_match(a.mdt, b.mdt) >= 23
 LIMIT 3;
 
- probe | sample | match 
+ probe | sample | score 
 -------+--------+-------
- 101_1 | 101_3  |    45
- 101_1 | 101_4  |    57
- 101_1 | 101_6  |    47
+ 101_1 | 101_2  |    23
+ 101_1 | 101_4  |    24
+ 101_1 | 101_5  |    27
 (3 rows)
 ```
-- sequential scan is performed on the table, but so far as a given number of templates (e.g., 3) having a match score above the defined threshold (e.g., 40)
+- sequential scan is performed on the table, but so far as a given number of templates (e.g., 3) having a match score above the defined threshold (e.g., 23)
 
+```sql
+afis=>
+SELECT a.id AS probe, b.id AS sample,
+  bz_match(a.xyt, b.xyt) AS score
+FROM fingerprints a, fingerprints b
+WHERE a.id = '101_1' AND b.id != a.id
+  AND bz_match(a.mdt, b.mdt) >= 20
+ORDER BY score DESC;
+
+ probe | sample | score 
+-------+--------+-------
+ 101_1 | 101_6  |    28
+ 101_1 | 101_5  |    27
+ 101_1 | 101_8  |    26
+ 101_1 | 101_2  |    23
+ 101_1 | 101_4  |    23
+(5 rows)
+```
+- "xyt" text field can be used for matching as well

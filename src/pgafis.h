@@ -19,7 +19,10 @@
 #include "fmgr.h"
 #include "utils/builtins.h"
 
-#define ushort unsigned short
+// 1 byte (0..255)
 #define uchar unsigned char
+
+// 2 bytes (0..65535)
+#define ushort unsigned short
 
 #endif   /* PGAFIS_H */

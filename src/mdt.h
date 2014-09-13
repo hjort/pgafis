@@ -29,8 +29,9 @@ pg_mdt_text(PG_FUNCTION_ARGS)
 	isize = VARSIZE(mdt) - VARHDRSZ;
 	idata = (uchar *) VARDATA(mdt);
 
+	elog(DEBUG1, "pg_mdt_text(): size = %d", isize);
 	if (debug > 0)
-		elog(NOTICE, "mdt: %x, isize: %d, idata: %x",
+		elog(DEBUG1, "mdt: %x, isize: %d, idata: %x",
 			(unsigned) mdt, isize, (unsigned) idata);
 
 	// check data validity
@@ -46,7 +47,7 @@ pg_mdt_text(PG_FUNCTION_ARGS)
 	}
 
 	if (debug > 0)
-		elog(NOTICE, "osize: %d, odata: %x",
+		elog(DEBUG1, "osize: %d, odata: %x",
 			osize, (unsigned) odata);
 
 	// initialize result buffer
@@ -69,6 +70,8 @@ int convert_xyt_binary_text(uchar **odata, unsigned *osize, uchar *idata, unsign
 	char *txt;
 	unsigned len = 0;
 
+	elog(DEBUG1, "convert_xyt_binary_text(): size = %d", isize);
+
 	xytq_s = load_xytq_binary(idata, isize);
 	if (xytq_s == XYTQ_NULL)
 	{
@@ -84,8 +87,8 @@ int convert_xyt_binary_text(uchar **odata, unsigned *osize, uchar *idata, unsign
 	len = 0;
 
 	if (debug > 0) {
-		elog(NOTICE, "Total de minúcias: %d", total_minutiae);
-		elog(DEBUG1, "No =>  X   Y   T   Q");
+		elog(DEBUG1, "total_minutiae = %d", total_minutiae);
+		elog(DEBUG2, "No =>  X   Y   T   Q");
 	}
 
 	for (i = 0; i < total_minutiae; i++)
@@ -98,7 +101,7 @@ int convert_xyt_binary_text(uchar **odata, unsigned *osize, uchar *idata, unsign
 		strcat(txt, xyt_line);
 		len += strlen(xyt_line) + 1;
 		if (debug > 0)
-			elog(DEBUG1, "%s", xyt_line);
+			elog(DEBUG2, "%s", xyt_line);
 	}
 
 	if (xytq_s != XYTQ_NULL)

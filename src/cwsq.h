@@ -32,8 +32,10 @@ pg_wsq_encode(PG_FUNCTION_ARGS)
 	isize = VARSIZE(image) - VARHDRSZ;
 	idata = (unsigned char *) VARDATA(image);
 
+	elog(DEBUG1, "pg_wsq_encode(): size = %d", isize);
+
 	if (debug > 0)
-		elog(NOTICE, "image: %x, isize: %d, idata: %x",
+		elog(DEBUG1, "image: %x, isize: %d, idata: %x",
 			(unsigned) image, isize, (unsigned) idata);
 
 	// read remaining function parameters
@@ -44,7 +46,7 @@ pg_wsq_encode(PG_FUNCTION_ARGS)
 	ppi = PG_ARGISNULL(5) ? -1 : PG_GETARG_INT32(5);
 
 	if (debug > 0)
-		elog(NOTICE, "bitrate: %.2f, width: %d, height: %d, depth: %d, ppi: %d",
+		elog(DEBUG1, "bitrate: %.2f, width: %d, height: %d, depth: %d, ppi: %d",
 			bitrate, width, height, depth, ppi);
 
 	// encode/compress the image pixmap
@@ -54,18 +56,16 @@ pg_wsq_encode(PG_FUNCTION_ARGS)
 	}
 
 	if (debug > 0)
-		elog(NOTICE, "Image data encoded, compressed byte length = %d", osize);
+		elog(DEBUG1, "Image data encoded, compressed byte length = %d", osize);
 
 	// initialize result buffer
 	res = (bytea *) palloc(osize + VARHDRSZ);
 	SET_VARSIZE(res, osize + VARHDRSZ);
 
 	// copy data to output buffer
-	//memset(VARDATA(res), 0, osize);
 	memcpy(VARDATA(res), odata, osize);
 
-	//pfree(odata);
+	free(odata);
 
 	PG_RETURN_BYTEA_P(res);
 }
-

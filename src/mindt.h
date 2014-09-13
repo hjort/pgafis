@@ -38,22 +38,24 @@ pg_min_detect(PG_FUNCTION_ARGS)
 	isize = VARSIZE(wsq) - VARHDRSZ;
 	idata = (uchar *) VARDATA(wsq);
 
+	elog(DEBUG1, "pg_min_detect(): size = %d", isize);
+
 	if (debug > 0)
-		elog(NOTICE, "wsq: %x, isize: %d, idata: %x",
+		elog(DEBUG1, "wsq: %x, isize: %d, idata: %x",
 			(unsigned) wsq, isize, (unsigned) idata);
 
 	// read boost parameter
 	boost = PG_ARGISNULL(1) ? FALSE : PG_GETARG_BOOL(1);
 	if (debug > 0)
-		elog(NOTICE, "boost: %d", boost);
+		elog(DEBUG1, "boost: %d", boost);
 
 	if (!is_wsq_type(idata, isize)) {
-		elog(ERROR, "Illegal image type (not WSQ)");
+		elog(ERROR, "Illegal image type (not in WSQ format)");
 		PG_RETURN_NULL();
 	}
 
 	if (debug > 0)
-		elog(NOTICE, "Extracting minutiae...");
+		elog(DEBUG1, "Extracting minutiae...");
 
 	if ((ret = extract_minutiae_xytq(&odata, (int *) &osize,
 			idata, isize, boost))) {
@@ -61,14 +63,13 @@ pg_min_detect(PG_FUNCTION_ARGS)
 	}
 
 	if (debug > 0)
-		elog(NOTICE, "Minutiae data created, byte length = %d", osize);
+		elog(DEBUG1, "Minutiae data extracted, byte length = %d", osize);
 
 	// initialize result buffer
 	res = (bytea *) palloc(osize + VARHDRSZ);
 	SET_VARSIZE(res, osize + VARHDRSZ);
 
 	// copy data to output buffer
-	//memset(VARDATA(res), 0, osize);
 	memcpy(VARDATA(res), odata, osize);
 	
 	free(odata);
@@ -111,7 +112,7 @@ int extract_minutiae_xytq(uchar **odata, int *osize,
 	int msize;
 
 	// 1. READ FINGERPRINT WSQ IMAGE FROM FILE INTO MEMORY
-	//elog(NOTICE, "1. READ FINGERPRINT WSQ IMAGE FROM FILE INTO MEMORY");
+	elog(DEBUG2, "1. READ FINGERPRINT WSQ IMAGE FROM FILE INTO MEMORY");
 
 	// Decode the image data from memory
 	if ((ret = decode_grayscale_image(&ndata, &nsize,
@@ -126,12 +127,12 @@ int extract_minutiae_xytq(uchar **odata, int *osize,
 		ippmm = ippi / (double) MM_PER_INCH;
 
 	// 2. ENHANCE IMAGE CONTRAST IF REQUESTED
-	//elog(NOTICE, "2. ENHANCE IMAGE CONTRAST IF REQUESTED");
+	elog(DEBUG2, "2. ENHANCE IMAGE CONTRAST IF REQUESTED");
 	if (boost)
 		trim_histtails_contrast_boost(ndata, iw, ih); 
 
 	// 3. GET MINUTIAE & BINARIZED IMAGE
-	//elog(NOTICE, "3. GET MINUTIAE & BINARIZED IMAGE");
+	elog(DEBUG2, "3. GET MINUTIAE & BINARIZED IMAGE");
 	if ((ret = get_minutiae(&minutiae, &quality_map, &direction_map,
 			&low_contrast_map, &low_flow_map, &high_curve_map,
 			&map_w, &map_h, &bdata, &bw, &bh, &bd,
@@ -144,7 +145,7 @@ int extract_minutiae_xytq(uchar **odata, int *osize,
 	free(ndata);
 
 	// 4. WRITE MINUTIAE TO OUTPUT VARIABLE
-	//elog(NOTICE, "4. WRITE MINUTIAE TO OUTPUT VARIABLE");
+	elog(DEBUG2, "4. WRITE MINUTIAE TO OUTPUT VARIABLE");
 	if ((ret = mdt_encode_minutiae(&mdata, &msize, minutiae))) {
 		free_minutiae(minutiae);
 		free(quality_map);
@@ -156,12 +157,12 @@ int extract_minutiae_xytq(uchar **odata, int *osize,
 		return(ret);
 	}
 
-	//elog(NOTICE, "Copying data to output variables...");
+	//elog(DEBUG2, "Copying data to output variables...");
 
 	*odata = mdata;
 	*osize = msize;
 
-	//elog(NOTICE, "Freeing memory...");
+	//elog(DEBUG2, "Freeing memory...");
 
 	// Done with minutiae detection maps
 	free(quality_map);
@@ -173,7 +174,7 @@ int extract_minutiae_xytq(uchar **odata, int *osize,
 	// Done with minutiae and binary image results
 	free_minutiae(minutiae);
 	free(bdata);
-//	free(ndata);
+//	free(ndata); //FIXME: dá problema...
 
 	// Exit normally
 	return(0);
@@ -207,50 +208,49 @@ int decode_grayscale_image(uchar **odata, int *osize,
 		//free(idata);
 		//fprintf(stderr, "ERROR : read_and_decode_grayscale_image : ");
 		//fprintf(stderr, "image depth : %d != 8\n", d);
-		elog(NOTICE, "image depth : %d != 8", d);
+		elog(DEBUG2, "image depth : %d != 8", d);
 		return(-4);
 	}
 
 	return(0);
 }
 
-// Grava as minúcias em formato binário próprio (MDT).
+// grava as minúcias em formato binário próprio (MDT)
 int mdt_encode_minutiae(uchar **odata, int *osize, const MINUTIAE *minutiae)
 {
 	unsigned i, qty, ox, oy, ot, oq;
 	MINUTIA *minutia;
-	uchar *mdt, *pmdt;
-	int len;
+	ushort *mdt, *pmdt;
+	int len, siz;
 
 	qty = minutiae->num;
 
+	elog(DEBUG1, "mdt_encode_minutiae(): qty = %d", qty);
 	if (debug > 0) {
-		elog(NOTICE, "Total de minúcias: %d", qty);
 		elog(DEBUG1, "No =>  X   Y   T   Q");
 	}
 
 	len = 1 + qty * 4; // header + 4 valores por minúcia
-	mdt = malloc(sizeof(ushort) * len);
+	siz = sizeof(ushort) * len;
+	mdt = malloc(siz);
 	pmdt = mdt;
-	
-	//memset(mdt, 0, sizeof(ushort) * siz);
-	*pmdt++ = qty;
+	memset(mdt, 0, siz);
+
+	*pmdt++ = (ushort) qty;
 	for (i = 0; i < qty; i++) {
 		minutia = minutiae->list[i];
 		lfs2m1_minutia_XYT((int*) &ox, (int*) &oy, (int*) &ot, minutia);
 		oq = sround(minutia->reliability * 100.0);
 		if (debug > 0)
 			elog(DEBUG1, "%2d => %3d %3d %3d %2d", i+1, ox, oy, ot, oq);
-		*pmdt++ = ox;
-		*pmdt++ = oy;
-		*pmdt++ = ot;
-		*pmdt++ = oq;
+		*pmdt++ = (ushort) ox;
+		*pmdt++ = (ushort) oy;
+		*pmdt++ = (ushort) ot;
+		*pmdt++ = (ushort) oq;
 	}
-	//fwrite(mdt, sizeof(ushort), len, file);
-	//free(mdt);
 
-	*odata = mdt;
-	*osize = len; //sizeof(ushort) * len;
+	*odata = (uchar *) mdt;
+	*osize = siz;
 
 	return(0);
 }

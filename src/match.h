@@ -51,7 +51,8 @@ pg_bz_match_text(PG_FUNCTION_ARGS)
 	//set_progname(0, "pgafis", 0); // definir nome do programa
 	//errorfp = stderr; // saída de erro padrão
 
-	//elog(NOTICE, "size: %d", size);
+	elog(DEBUG1, "pg_bz_match_text()");
+	//elog(DEBUG1, "size: %d", size);
 
 	ps = load_xyt(str1);
 	if (ps != XYT_NULL)
@@ -65,7 +66,7 @@ pg_bz_match_text(PG_FUNCTION_ARGS)
 	if (gs != XYT_NULL)
 		free((char *) gs);
 
-//	elog(NOTICE, "score: %d", score);
+//	elog(DEBUG1, "score: %d", score);
 
 	PG_RETURN_INT32(score);
 }
@@ -82,6 +83,8 @@ pg_bz_match_bytea(PG_FUNCTION_ARGS)
 
 	struct xyt_struct *ps = XYT_NULL; // probe structure
 	struct xyt_struct *gs = XYT_NULL; // gallery structure
+
+	elog(DEBUG1, "pg_bz_match_bytea()");
 
 	mdt1 = PG_GETARG_BYTEA_P(0);
 	size1 = VARSIZE(mdt1) - VARHDRSZ;
@@ -114,7 +117,7 @@ pg_bz_match_bytea(PG_FUNCTION_ARGS)
 		free((char *) gs);
 
 	if (debug > 0)
-		elog(NOTICE, "score: %d", score);
+		elog(DEBUG1, "score: %d", score);
 
 	PG_RETURN_INT32(score);
 }

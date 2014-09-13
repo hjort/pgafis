@@ -26,9 +26,10 @@ struct xyt_struct * load_xyt(char *str)
 		qvals_lng[MAX_FILE_MINUTIAE];
 	char xyt_line[MAX_LINE_LENGTH];
 
+	elog(DEBUG1, "load_xyt()");
+
 	nminutiae = 0;
 	nargs_expected = 0;
-
 	memset(xyt_line, 0, MAX_LINE_LENGTH);
 
 	do {
@@ -118,7 +119,7 @@ struct xyt_struct * load_xyt(char *str)
 	if (xytq_s != XYTQ_NULL)
 		free((char *) xytq_s);
 
-	//elog(NOTICE, "Loaded minutiae data with %d lines", nminutiae + 1);
+	elog(DEBUG2, "Loaded minutiae data with %d lines", nminutiae + 1);
 
 	return xyt_s;
 }
@@ -126,12 +127,14 @@ struct xyt_struct * load_xyt(char *str)
 struct xyt_struct * load_xyt_binary(uchar *data, unsigned size)
 {
 	unsigned i, qty, ox, oy, ot, oq;
-	uchar *pdata;
+	ushort *pdata;
 	struct xyt_struct * xyt_s;
 	struct xytq_struct * xytq_s;
 
-	pdata = data;
-	qty = *pdata;
+	elog(DEBUG1, "load_xyt_binary(): size = %d", size);
+
+	pdata = (ushort *) data;
+	qty = (int) *pdata++;
 
 	xytq_s = (struct xytq_struct *) malloc(sizeof(struct xytq_struct));
 	if (xytq_s == XYTQ_NULL)
@@ -141,19 +144,19 @@ struct xyt_struct * load_xyt_binary(uchar *data, unsigned size)
 	}
 
 	if (debug > 0) {
-		elog(NOTICE, "Total de minúcias: %d", qty);
-		elog(DEBUG1, "No =>  X   Y   T   Q");
+		elog(DEBUG1, "Total de minúcias: %d", qty);
+		elog(DEBUG2, "No =>  X   Y   T   Q");
 	}
 
 	xytq_s->nrows = qty;
 	for (i = 0; i < qty; i++)
 	{
-		ox = *pdata++;
-		oy = *pdata++;
-		ot = *pdata++;
-		oq = *pdata++;
+		ox = (ushort) *pdata++;
+		oy = (ushort) *pdata++;
+		ot = (ushort) *pdata++;
+		oq = (ushort) *pdata++;
 		if (debug > 0)
-			elog(DEBUG1, "%2d => %3d %3d %3d %2d", i+1, ox, oy, ot, oq);
+			elog(DEBUG2, "%2d => %3d %3d %3d %2d", i+1, ox, oy, ot, oq);
 		xytq_s->xcol[i] = ox;
 		xytq_s->ycol[i] = oy;
 		xytq_s->thetacol[i] = ot;
@@ -170,20 +173,22 @@ struct xyt_struct * load_xyt_binary(uchar *data, unsigned size)
 
 int is_minutiae_data(uchar *data, unsigned size)
 {
-	int elen, qty;
-	qty = *data;
-	elen = 1 + qty * 4; // header + 4 valores por minúcia
-	return(size == elen);
+	int explen, qty;
+	qty = (ushort) *data;
+	explen = sizeof(ushort) * (1 + qty * 4); // header + 4 valores por minúcia
+	return(size == explen);
 }
 
 struct xytq_struct * load_xytq_binary(uchar *data, unsigned size)
 {
 	unsigned i, qty, ox, oy, ot, oq;
-	uchar *pdata;
+	ushort *pdata;
 	struct xytq_struct *xytq_s;
 
-	pdata = data;
-	qty = *pdata;
+	elog(DEBUG1, "load_xytq_binary(): size = %d", size);
+
+	pdata = (ushort *) data;
+	qty = *pdata++;
 
 	xytq_s = (struct xytq_struct *) malloc(sizeof(struct xytq_struct));
 	if (xytq_s == XYTQ_NULL)
@@ -193,8 +198,8 @@ struct xytq_struct * load_xytq_binary(uchar *data, unsigned size)
 	}
 
 	if (debug > 0) {
-		elog(NOTICE, "Total de minúcias: %d", qty);
-		elog(DEBUG1, "No =>  X   Y   T   Q");
+		elog(DEBUG1, "minutiae = %d", qty);
+		elog(DEBUG2, "No =>  X   Y   T   Q");
 	}
 
 	xytq_s->nrows = qty;
@@ -204,8 +209,8 @@ struct xytq_struct * load_xytq_binary(uchar *data, unsigned size)
 		oy = *pdata++;
 		ot = *pdata++;
 		oq = *pdata++;
-		//if (debug > 0)
-		//	elog(DEBUG1, "%2d => %3d %3d %3d %2d", i+1, ox, oy, ot, oq);
+		if (debug > 0)
+			elog(DEBUG2, "%2d => %3d %3d %3d %2d", i+1, ox, oy, ot, oq);
 		xytq_s->xcol[i] = ox;
 		xytq_s->ycol[i] = oy;
 		xytq_s->thetacol[i] = ot;
