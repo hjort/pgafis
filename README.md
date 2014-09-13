@@ -51,7 +51,7 @@ LIMIT 5;
 ```sql
 afis=>
 UPDATE fingerprints
-SET wsq = cwsq(pgm, 0.85, 300, 300, 8, null)
+SET wsq = cwsq(pgm, 2.25, 300, 300, 8, null)
 WHERE wsq IS NULL;
 ```
 - compressed image in WSQ format can be generated from original fingerprint raw image (PGM format)
