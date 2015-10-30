@@ -1,0 +1,50 @@
+# http://bias.csr.unibo.it/fvc2004/download.asp
+
+rm -rf db?
+
+# baixar dados e extrair arquivos
+for i in `seq 1 4`
+do
+  mkdir db$i
+  unzip zips/DB${i}_B.zip -d db$i/
+done
+
+# verificar tamanho das imagens
+$ identify db1/101_1.tif
+db1/101_1.tif TIFF 640x480 640x480+0+0 8-bit Grayscale DirectClass 308KB 0.000u 0:00.009
+$ identify db2/101_1.tif
+db2/101_1.tif TIFF 328x364 328x364+0+0 8-bit Grayscale DirectClass 120KB 0.000u 0:00.000
+$ identify db3/101_1.tif
+db3/101_1.tif TIFF 300x480 300x480+0+0 8-bit Grayscale DirectClass 145KB 0.000u 0:00.000
+$ identify db4/101_1.tif
+db4/101_1.tif TIFF 288x384 288x384+0+0 8-bit Grayscale DirectClass 111KB 0.000u 0:00.000
+
+# converter imagens para formato WSQ
+find db1/ -name "*.tif" -exec cwsq .75 wsq {} -r 640,480,8 \;
+find db2/ -name "*.tif" -exec cwsq .75 wsq {} -r 328,364,8 \;
+find db3/ -name "*.tif" -exec cwsq .75 wsq {} -r 300,480,8 \;
+find db4/ -name "*.tif" -exec cwsq .75 wsq {} -r 288,384,8 \;
+
+# extrair minúcias
+for i in `seq 1 4`
+do
+  for a in db$i/*.wsq
+  do
+    echo "$a"
+    b="${a/.wsq/}"
+    mindtct $a $b
+  done
+done
+
+# executar comparações
+for i in `seq 1 4`
+do
+  for a in db$i/*.xyt
+  do
+    echo "[$a]"
+    bozorth3 -m1 -A outfmt=spg -T 40 -p $a db$i/*.xyt
+    echo
+  done
+done
+
+
