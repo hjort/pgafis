@@ -6,7 +6,8 @@ OBJS = pgafis.o
 EXTENSION = pgafis
 DATA = pgafis--1.0.sql pgafis--unpackaged--1.0.sql
 
-NBIS_HOME = /opt/nbis-4.2.0
+NBIS_HOME = /opt/nbis-5.0.0
+#NBIS_HOME = /opt/nbis-4.2.0
 
 BOZORTH_LIBS = -lbozorth3 -lm
 IMGTOOLS_LIBS = -limage -lihead -lwsq -ljpegl -lpng -lfet -lioutil -lutil -lm

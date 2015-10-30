@@ -1,4 +1,5 @@
-CFLAGS=-I/opt/nbis-4.2.0/include -L/opt/nbis-4.2.0/lib -g
+CFLAGS=-I/opt/nbis-5.0.0/include -L/opt/nbis-5.0.0/lib -g
+#CFLAGS=-I/opt/nbis-4.2.0/include -L/opt/nbis-4.2.0/lib -g
 
 all: bz ct uc us
 
@@ -13,7 +14,7 @@ wsq: wsq.c
 
 test: all
 	#./bz
-	./bz ../../samples/xyt/101_1.xyt ../../samples/xyt/101_2.xyt
+	./bz ../samples/xyt/101_1.xyt ../samples/xyt/101_2.xyt
 
 wsq-test: wsq
 	./wsq sample2.pgm
