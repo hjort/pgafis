@@ -53,7 +53,8 @@ $PSQL -c "UPDATE $tabela SET mdt = mindt(wsq, true) WHERE mdt IS NULL"
 $PSQL -c "UPDATE $tabela SET xyt = mdt2text(mdt) WHERE xyt IS NULL"
 
 # minúcias
-$PSQL -c "UPDATE $tabela SET mins = array_length(string_to_array(xyt, E'\n'), 1) WHERE mins IS NULL"
+$PSQL -c "UPDATE $tabela SET mins = mdt_mins(mdt) WHERE mins IS NULL"
+#$PSQL -c "UPDATE $tabela SET mins = array_length(string_to_array(xyt, E'\n'), 1) WHERE mins IS NULL"
 
 # verificação dos valores
 echo "SELECT dbid, fpid,
@@ -90,3 +91,4 @@ alter table fvc04m add primary key (id);
 # public | fvc04m         | table    | rodrigo  | 192 kB     | 
 
 exit 0
+

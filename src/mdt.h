@@ -8,7 +8,7 @@
 
 /*
 SET client_min_messages TO debug1;
-SELECT id, mdt2text(mdt) FROM fingerprints;
+SELECT id, mdt2text(mdt), mdt_mins(mdt) FROM fingerprints;
 */
 
 int convert_xyt_binary_text(uchar**, unsigned*, uchar*, unsigned);
@@ -111,5 +111,37 @@ int convert_xyt_binary_text(uchar **odata, unsigned *osize, uchar *idata, unsign
 	*osize = len;
 
 	return(0);
+}
+
+// CREATE FUNCTION mdt_mins(mdt bytea) RETURNS int
+PG_FUNCTION_INFO_V1(pg_mdt_mincnt);
+Datum
+pg_mdt_mincnt(PG_FUNCTION_ARGS)
+{
+	bytea *mdt;
+	unsigned isize = 0;
+	uchar *idata = NULL;
+	ushort count = 0;
+
+	// read MDT parameter
+	mdt = PG_GETARG_BYTEA_P(0);
+	isize = VARSIZE(mdt) - VARHDRSZ;
+	idata = (uchar *) VARDATA(mdt);
+
+	elog(DEBUG1, "pg_mdt_mincnt(): size = %d", isize);
+	if (debug > 0)
+		elog(DEBUG1, "mdt: %x, isize: %d, idata: %x",
+			(unsigned) mdt, isize, (unsigned) idata);
+
+	// check data validity
+	if (!is_minutiae_data(idata, isize)) {
+		elog(ERROR, "Argument does not contain minutiae data");
+		PG_RETURN_NULL();
+	}
+
+	// read first byte (i.e., number of minutiae)
+	count = (ushort) *idata;
+
+	PG_RETURN_INT32(count);
 }
 

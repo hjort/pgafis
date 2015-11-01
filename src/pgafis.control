@@ -1,5 +1,5 @@
 # pgafis extension
 comment = 'AFIS Support for PostgreSQL'
-default_version = '1.0'
+default_version = '1.1'
 module_pathname = '$libdir/pgafis'
 relocatable = true
