@@ -8,6 +8,11 @@ CREATE FUNCTION cwsq(bytea, real, int, int, int, int)
 	AS 'MODULE_PATHNAME', 'pg_wsq_encode'
         LANGUAGE C IMMUTABLE;
 
+CREATE FUNCTION nfiq(bytea)
+	RETURNS int
+	AS 'MODULE_PATHNAME', 'pg_nfiq'
+        LANGUAGE C STRICT IMMUTABLE;
+
 CREATE FUNCTION mindt(bytea)
 	RETURNS bytea
 	AS 'MODULE_PATHNAME', 'pg_min_detect'

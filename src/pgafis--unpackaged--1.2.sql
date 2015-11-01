@@ -5,6 +5,8 @@
 
 ALTER EXTENSION pgafis ADD FUNCTION cwsq(bytea, real, int, int, int, int);
 
+ALTER EXTENSION pgafis ADD FUNCTION nfiq(bytea);
+
 ALTER EXTENSION pgafis ADD FUNCTION mindt(bytea);
 ALTER EXTENSION pgafis ADD FUNCTION mindt(bytea, boolean);
 
