@@ -26,6 +26,11 @@ FROM (
 (1 row)
 */
 
+-- faster 1:1
+SELECT (bz_match(a.mdt, b.mdt) >= 40) AS match
+FROM fvc04m a, fvc04m b
+WHERE a.id = '3:101_1' AND b.id = '3:101_2';
+
 -- =========================================================
 
 -- Identification (1:N)
@@ -69,6 +74,14 @@ LIMIT 5;
  3:101_1 | 3:101_7 |    46
 (5 rows)
 */
+
+-- faster 1:N
+SELECT b.id AS matched_sample
+FROM fvc04m a, fvc04m b
+WHERE a.id = '3:101_1'
+  AND b.id != a.id
+  AND bz_match(a.mdt, b.mdt) >= 40
+LIMIT 3;
 
 -- =========================================================
 
