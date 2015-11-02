@@ -39,5 +39,5 @@ include $(top_builddir)/src/Makefile.global
 include $(top_srcdir)/contrib/contrib-global.mk
 endif
 
-pgafis.o: pgafis.c pgafis.h cwsq.h nfiq.h mindt.h match.h xyt.h mdt.h
+pgafis.o: pgafis.c pgafis.h cwsq.h fiq.h mindt.h match.h xyt.h mdt.h
 

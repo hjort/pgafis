@@ -24,3 +24,7 @@
 
 # Backup files
 *~
+
+# Others
+databases/db*
+databases/zips

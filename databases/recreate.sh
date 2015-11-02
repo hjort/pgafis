@@ -56,13 +56,17 @@ $PSQL -c "UPDATE $tabela SET xyt = mdt2text(mdt) WHERE xyt IS NULL"
 $PSQL -c "UPDATE $tabela SET mins = mdt_mins(mdt) WHERE mins IS NULL"
 #$PSQL -c "UPDATE $tabela SET mins = array_length(string_to_array(xyt, E'\n'), 1) WHERE mins IS NULL"
 
+# NFIQ
+$PSQL -c "UPDATE $tabela SET nfiq = nfiq(wsq) WHERE nfiq IS NULL"
+
 # verificação dos valores
 echo "SELECT dbid, fpid,
   length(tif) AS tif_bytes,
   length(wsq) AS wsq_bytes,
   length(mdt) AS mdt_bytes,
   length(xyt) AS xyt_chars,
-  mins
+  mins,
+  nfiq
 FROM $tabela
 ORDER BY random()
 LIMIT 15" | $PSQL -q
@@ -73,7 +77,8 @@ echo "SELECT dbid,
   pg_size_pretty(avg(length(wsq))) AS wsq,
   pg_size_pretty(trunc(avg(length(mdt)))) AS mdt,
   pg_size_pretty(trunc(avg(length(xyt)))) AS xyt,
-  trunc(avg(mins))::int AS mins
+  trunc(avg(mins))::int AS mins,
+  trunc(avg(nfiq))::int AS nfiq
 FROM $tabela
 GROUP BY dbid
 ORDER BY dbid" | $PSQL -q

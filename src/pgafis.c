@@ -21,9 +21,9 @@ extern Datum pg_bz_match_text(PG_FUNCTION_ARGS);
 extern Datum pg_bz_match_bytea(PG_FUNCTION_ARGS);
 
 #include "cwsq.h"
-#include "nfiq.h"
-#include "match.h"
 #include "mindt.h"
+#include "fiq.h"
+#include "match.h"
 #include "mdt.h"
 
 int debug = 0;

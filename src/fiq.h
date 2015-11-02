@@ -10,6 +10,8 @@
 SELECT nfiq(mdt) FROM fingers;
 */
 
+#include <nfiq.h>
+
 // CREATE FUNCTION nfiq(bytea) RETURNS int
 PG_FUNCTION_INFO_V1(pg_nfiq);
 Datum
@@ -19,10 +21,11 @@ pg_nfiq(PG_FUNCTION_ARGS)
 	unsigned size;
 	unsigned char *data;
 	int ret = 0;
-	int img_type, ilen, iw, ih, id, ippi, verbose;
+	uchar *ndata;
+	int nsize;
+	int iw, ih, id, ippi, verbose = 0;
 	int nfiq = 0;
 	float conf = 0.0;
-	int32 result = 0;
 
 	elog(DEBUG1, "pg_nfiq()");
 
@@ -30,32 +33,37 @@ pg_nfiq(PG_FUNCTION_ARGS)
 	size = VARSIZE(image) - VARHDRSZ;
 	data = (unsigned char *) VARDATA(image);
 
-	/*if (!is_minutiae_data(data, size)) {
-		elog(ERROR, "First argument does not contain minutiae data");
-		PG_RETURN_NULL();
-	}*/	
+	if (debug > 0)
+		elog(DEBUG1, "image: %x, size: %d, data: %x",
+			(unsigned) image, size, (unsigned) data);
 
-/*
-	ps = load_xyt_binary(data, size);
-
-	if (ps != XYT_NULL)
-		score = bozorth_main(ps, gs);
-
-	if (ps != XYT_NULL)
-		free((char *) ps);
-*/
-
-	/* Compute the NFIQ value */
-	ret = comp_nfiq(&nfiq, &conf, data, iw, ih, id, ippi, &verbose); // &flags.verbose);
-	/* If system error ... */
-	if (ret < 0) {
-		free(data);
+	// Decode the image data from memory
+	elog(DEBUG2, "decode_grayscale_image()");
+	if ((ret = decode_grayscale_image(&ndata, &nsize,
+			&iw, &ih, &id, &ippi, data, size))) {
+		elog(ERROR, "Error decoding grayscale image from WSQ content");
+		free(ndata);
 		PG_RETURN_NULL();
 	}
+
+	/* Compute the NFIQ value */
+	elog(DEBUG2, "comp_nfiq()");
+	ret = comp_nfiq(&nfiq, &conf, data, iw, ih, id, ippi, &verbose); // &flags.verbose);
+	if (debug > 0)
+		elog(DEBUG1, "ret: %d, w,h,d,ppi: %d,%d,%d,%d", ret, iw, ih, id, ippi);
+	// if system error...
+	if (ret < 0) {
+		elog(ERROR, "A system error occurred when computing the NFIQ value: %d", ret);
+		free(ndata);
+		PG_RETURN_NULL();
+	}
+
+	// Done with input image data
+	free(ndata);
 
 	if (debug > 0)
 		elog(DEBUG1, "nfiq: %d, conf: %4.2f", nfiq, conf);
 
-	result = nfiq;
-	PG_RETURN_INT32(result);
+	PG_RETURN_INT32((int32) nfiq);
 }
+
