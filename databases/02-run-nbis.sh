@@ -1,19 +1,10 @@
-# http://bias.csr.unibo.it/fvc2004/download.asp
+#!/bin/bash
 
-# baixar arquivos
-for i in `seq 1 4`
-do
-  wget "http://bias.csr.unibo.it/fvc2004/Downloads/DB${i}_B.zip"
-done
-
-rm -rf db?
-
-# extrair arquivos
-for i in `seq 1 4`
-do
-  mkdir db$i
-  unzip zips/DB${i}_B.zip -d db$i/
-done
+if ! which bozorth3
+then
+  echo "NBIS programs not in shell path"
+  exit 1
+fi
 
 # verificar tamanho das imagens
 #$ identify db1/101_1.tif
@@ -26,12 +17,14 @@ done
 #db4/101_1.tif TIFF 288x384 288x384+0+0 8-bit Grayscale DirectClass 111KB 0.000u 0:00.000
 
 # converter imagens para formato WSQ
+echo "Converting TIFF images to WSQ format..."
 find db1/ -name "*.tif" -exec cwsq .75 wsq {} -r 640,480,8 \;
 find db2/ -name "*.tif" -exec cwsq .75 wsq {} -r 328,364,8 \;
 find db3/ -name "*.tif" -exec cwsq .75 wsq {} -r 300,480,8 \;
 find db4/ -name "*.tif" -exec cwsq .75 wsq {} -r 288,384,8 \;
 
 # verificar qualidade
+echo "Checking quality of WSQ images through NFIQ..."
 for i in `seq 1 4`
 do
   for a in db$i/*.wsq
@@ -42,6 +35,7 @@ do
 done
 
 # extrair minúcias
+echo "Extracting features from fingerprints through MINDTCT..."
 for i in `seq 1 4`
 do
   for a in db$i/*.wsq
@@ -53,6 +47,7 @@ do
 done
 
 # executar comparações
+echo "Performing fingerprint matches through BOZORTH3..."
 for i in `seq 1 4`
 do
   for a in db$i/*.xyt
@@ -62,4 +57,6 @@ do
     echo
   done
 done
+
+exit 0
 
