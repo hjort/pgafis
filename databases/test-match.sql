@@ -83,6 +83,12 @@ WHERE a.id = '3:101_1'
   AND bz_match(a.mdt, b.mdt) >= 40
 LIMIT 3;
 
+SELECT array_agg(b.id) AS matched_samples
+FROM fvc04m a, fvc04m b
+WHERE a.id = '3:109_1'
+  AND b.id != a.id
+  AND bz_match(a.mdt, b.mdt) >= 40;
+
 -- =========================================================
 
 SELECT dbid,

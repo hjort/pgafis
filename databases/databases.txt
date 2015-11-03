@@ -1,13 +1,14 @@
 # http://bias.csr.unibo.it/fvc2004/download.asp
 
+# baixar arquivos
 for i in `seq 1 4`
 do
-  wget http://bias.csr.unibo.it/fvc2004/Downloads/DB${i}_B.zip
+  wget "http://bias.csr.unibo.it/fvc2004/Downloads/DB${i}_B.zip"
 done
 
 rm -rf db?
 
-# baixar dados e extrair arquivos
+# extrair arquivos
 for i in `seq 1 4`
 do
   mkdir db$i
