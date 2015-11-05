@@ -1,29 +1,30 @@
 -- create table containing only ids and minutiae
-DROP TABLE IF EXISTS casiam;
-SELECT id, mdt INTO casiam FROM casia;
-ALTER TABLE casiam ADD PRIMARY KEY (id);
+DROP TABLE IF EXISTS casia_m;
+SELECT id, mdt INTO casia_m FROM casia;
+ALTER TABLE casia_m ADD PRIMARY KEY (id);
 
 -- check table structure
-\d casiam
+\d casia_m
 
 /*
-    Table "public.casiam"
+    Table "public.casia_m"
  Column |  Type   | Modifiers 
 --------+---------+-----------
  id     | integer | not null
  mdt    | bytea   | 
 Indexes:
-    "casiam_pkey" PRIMARY KEY, btree (id)
+    "casia_m_pkey" PRIMARY KEY, btree (id)
 */
 
 -- compare size in disk for the tables
 \d+
 
 /*
- Schema |      Name      |   Type   |  Owner   |    Size    | Description 
---------+----------------+----------+----------+------------+-------------
- public | fvc04          | table    | rodrigo  | 43 MB      | 
- public | fvc04m         | table    | rodrigo  | 192 kB     | 
+                          List of relations
+ Schema |     Name     |   Type   | Owner |    Size    | Description 
+--------+--------------+----------+-------+------------+-------------
+ public | casia        | table    | afis  | 2905 MB    | 
+ public | casia_m      | table    | afis  | 9536 kB    | 
 */
 
 \timing on
@@ -33,15 +34,15 @@ Indexes:
 -- Verification (1:1)
 
 SELECT (bz_match(a.mdt, b.mdt) >= 40) AS match
-FROM casiam a, casiam b
-WHERE a.id = (SELECT id FROM casia WHERE fp = '001_L0_0')
-  AND b.id = (SELECT id FROM casia WHERE fp = '001_L0_1');
+FROM casia_m a, casia_m b
+WHERE a.id = (SELECT id FROM casia WHERE fp = '000_L0_0')
+  AND b.id = (SELECT id FROM casia WHERE fp = '000_L0_2');
 
 -- faster!
 SELECT (bz_match(a.mdt, b.mdt) >= 40) AS match
-FROM casiam a, casiam b
+FROM casia_m a, casia_m b
 WHERE a.id = 1
-  AND b.id = 4;
+  AND b.id = 3;
 
 /*
  match 
@@ -51,14 +52,14 @@ WHERE a.id = 1
 */
 
 SELECT bz_match(a.mdt, b.mdt) AS score
-FROM casiam a, casiam b
+FROM casia_m a, casia_m b
 WHERE a.id = 1
-  AND b.id = 4;
+  AND b.id = 3;
 
 /*
  score 
 -------
-    71
+    93
 (1 row)
 */
 
@@ -68,24 +69,38 @@ WHERE a.id = 1
 
 -- returns only first match
 SELECT b.id AS first_matching_sample
-FROM casiam a, casiam b
+FROM casia_m a, casia_m b
 WHERE a.id = (SELECT id FROM casia WHERE fp = '001_L0_0')
   AND b.id != a.id
   AND bz_match(a.mdt, b.mdt) >= 40
 LIMIT 1;
 
+/*
+ first_matching_sample 
+-----------------------
+                  1726
+(1 row)
+*/
+
 -- faster!
 SELECT b.id AS first_matching_sample
-FROM casiam a, casiam b
-WHERE a.id = 1
+FROM casia_m a, casia_m b
+WHERE a.id = 41
   AND b.id != a.id
   AND bz_match(a.mdt, b.mdt) >= 40
 LIMIT 1;
 
 -- returns all matches
 SELECT array_agg(b.id) AS matching_samples
-FROM casiam a, casiam b
-WHERE a.id = 1
+FROM casia_m a, casia_m b
+WHERE a.id = 41
   AND b.id != a.id
   AND bz_match(a.mdt, b.mdt) >= 40;
+
+/*
+ matching_samples  
+-------------------
+ {1726,1839,45,44}
+(1 row)
+*/
 
