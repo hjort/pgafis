@@ -1,28 +1,9 @@
 \timing on
 
--- criar tabela contendo duplicações
-DROP TABLE IF EXISTS casia_d;
-CREATE TABLE casia_d (
-  probe int,
-  sample int,
-  score int
-);
-
--- deduplicação de toda a base biométrica (~40 min)
-INSERT INTO casia_d
-SELECT c.*
-FROM (
-  SELECT a.id AS probe, b.id AS sample,
-    bz_match(a.mdt, b.mdt) AS score
-  FROM casia a, casia b
-  WHERE a.id != b.id
-  --LIMIT 1280
-) c
-WHERE score >= 40;
-
-ALTER TABLE casia_d ADD PRIMARY KEY (probe, sample);
-
 \d casia_d
+
+/*
+*/
 
 -- =========================================================
 
