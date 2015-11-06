@@ -31,32 +31,49 @@ inicio=`date`
 echo "Recreating deduplication results table..."
 echo "DROP TABLE IF EXISTS ${table}_d;
 CREATE TABLE ${table}_d (
-  probe int,
-  sample int,
-  score int
+  probe int2,
+  sample int2,
+  score int2
 );
 " | $PSQL -q
+echo
+
+# retrieve maximum id
+maxid=`$PSQL -tA -c "SELECT max(id) FROM ${table}"`
+
+let chunks=procs*2
+sid=1
+eid=$chunks
 
 # loop for each process
-for nproc in `seq 1 $procs`
+while [ $eid -le $maxid ]
 do
-  let resto=nproc-1
-  #sql="SELECT count(1) FROM ${table} WHERE id % $procs = ${resto}"
-  sql="
+  for nproc in `seq 1 $procs`
+  do
+    let resto=nproc-1
+    #sql="SELECT count(1) FROM ${table} WHERE id % $procs = ${resto}"
+    sql="
 INSERT INTO ${table}_d
 SELECT c.*
 FROM (
   SELECT a.id AS probe, b.id AS sample,
     bz_match(a.mdt, b.mdt) AS score
   FROM casia a, casia b
-  WHERE a.id % $procs = ${resto} AND a.id != b.id
+  WHERE a.id BETWEEN $sid AND $eid
+    AND a.id % $procs = ${resto}
+    AND b.id > a.id
+--limit 5000
 ) c
 WHERE score >= 40;
 "
-  echo "Process $nproc: $sql"
-  $PSQL -q -c "$sql" &
+    echo "=> Process $nproc [$sid->$eid]: $sql"
+    $PSQL -q -c "$sql" &
+  done
+  echo -e "[`date`]\n"
+  wait
+  let sid+=chunks
+  let eid+=chunks
 done
-wait
 
 # create primary key
 echo "Creating primary key..."
