@@ -3,8 +3,6 @@
 dbase="afis"
 table="casia"
 
-tmpdir="/tmp/pgafis"
-
 PSQL="/usr/local/pgsql/bin/psql $dbase"
 
 # check if several arguments were passed
@@ -65,7 +63,6 @@ FROM (
   WHERE a.id BETWEEN $sid AND $eid
     AND a.id % $procs = ${resto}
     AND b.id > a.id
---limit 5000
 ) c
 WHERE score >= 40;
 "

@@ -3,7 +3,7 @@
 dbase="afis"
 table="fvc04"
 
-tmpdir="/tmp/pgafis"
+tmpdir="/tmp/pgafis/fvc04"
 
 PSQL="/usr/local/pgsql/bin/psql $dbase"
 
