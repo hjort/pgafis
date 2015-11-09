@@ -5,8 +5,10 @@ table="casia"
 
 tmpdir="/tmp/pgafis"
 
-PSQL="/usr/local/pgsql/bin/psql $dbase -h 10.11.70.147 -U afis"
-#PSQL="/usr/local/pgsql/bin/psql $dbase"
+PSQL="/usr/local/pgsql/bin/psql $dbase"
+
+if [ "$PGHOST" != "" ]; then echo "Considering host: $PGHOST"; fi
+if [ "$PGUSER" != "" ]; then echo "Considering user: $PGUSER"; fi
 
 rm -rf $tmpdir
 

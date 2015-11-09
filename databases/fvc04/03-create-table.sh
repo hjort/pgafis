@@ -7,6 +7,9 @@ tmpdir="/tmp/pgafis"
 
 PSQL="/usr/local/pgsql/bin/psql $dbase"
 
+if [ "$PGHOST" != "" ]; then echo "Considering host: $PGHOST"; fi
+if [ "$PGUSER" != "" ]; then echo "Considering user: $PGUSER"; fi
+
 rm -rf $tmpdir
 
 # recriação das estruturas
@@ -67,7 +70,6 @@ $PSQL -c "UPDATE $table SET xyt = mdt2text(mdt)"
 # minúcias
 echo "Counting number of minutiae extracted..."
 $PSQL -c "UPDATE $table SET mins = mdt_mins(mdt)"
-#$PSQL -c "UPDATE $table SET mins = array_length(string_to_array(xyt, E'\n'), 1) WHERE mins IS NULL"
 
 # NFIQ
 echo "Checking quality of WSQ images through NFIQ..."
