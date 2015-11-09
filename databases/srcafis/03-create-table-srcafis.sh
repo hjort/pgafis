@@ -1,9 +1,9 @@
 #!/bin/bash
 
 dbase="afis"
-table="atvs"
+table="srcafis"
 
-tmpdir="/tmp/pgafis/atvs"
+tmpdir="/tmp/pgafis/srcafis"
 
 PSQL="/usr/local/pgsql/bin/psql $dbase"
 
@@ -17,14 +17,12 @@ echo "Recreating fingerprints table..."
 echo "DROP TABLE IF EXISTS $table;
 CREATE TABLE $table (
   id serial NOT NULL PRIMARY KEY,
-  fp char(18) NOT NULL, -- fingerprint id: uXX_A_BB_CD_YY (eg: 'ds1_u10_f_fo_rm_04')
-  ds int2, -- dataset (1: WithCooperation, 2: WithoutCooperation)
-  pid int2, -- number of the user [01 02 03 ... 17]
-  of char(1), -- original / fake
-  sn char(2), -- capacitive / optical / thermal
-  fid char(2), -- right / left hand, middle / index finger
+  ds varchar(13) NOT NULL, -- dataset (eg: 'FVC2000/DB3_B', 'Neurotech/CM', 'Neurotech/UrU')
+  fp char(8) NOT NULL, -- fingerprint id (eg: '013_3_1', '103_1', '999_3_1')
+  pid int2, -- person identification
+  fid int2, -- finger identification
   whz varchar(12), -- image dimensions (widht x height x depth)
-  bmp bytea NOT NULL,
+  tif bytea NOT NULL,
   wsq bytea,
   mdt bytea,
   xyt text,
@@ -32,40 +30,42 @@ CREATE TABLE $table (
   nfiq int2
 );" | $PSQL -q
 
-# BMP
-echo "Importing BMP images to database..."
+# TIFF
+echo "Importing TIFF images to database..."
 dbd="$tmpdir"
-mkdir -p $dbd/bmp1/ $dbd/bmp2/ $dbd/hex/
-find images/DS_WithCooperation/ -type f -name "*.bmp" -exec cp {} $dbd/bmp1/ \;
-find images/DS_WithoutCooperation/ -type f -name "*.bmp" -exec cp {} $dbd/bmp2/ \;
+mkdir -p $dbd/tif/ $dbd/hex/
+cp -R TestDatabase/* $dbd/tif/
 > errors.log
-for i in 1 2
+cd $dbd/tif/
+for a in `find -type f -name "*.tif"`
 do
-  for a in $dbd/bmp$i/*.bmp
-  do
-    b="`basename $a`"
-    c="${b/.bmp/}"
-    c="${c/_fake_/_f_}" # necessary due to erroneus filenames... :P
-    c="ds${i}_${c}" # insert DS index (1: WithCooperation, 2: WithoutCooperation)
-    d="$dbd/hex/$c.hex"
-    whz="$(identify -format '%wx%hx%z' $a)" # retrieve image dimensions
-    echo "$c"
-    xxd -p $a | tr -d "\n" > $d
-    (echo -ne "$c\t$whz\t\\\\\x"; cat $d) | $PSQL -c "COPY $table (fp, whz, bmp) FROM STDIN" 2>> errors.log
-  done
+  b="`basename $a`"
+  c="${b/.tif/}"
+  d="$dbd/hex/$c.hex"
+  ds=$(dirname $a | sed -e 's/^.\///' -e 's/CrossMatch_Sample_DB/CM/' -e 's/UareU_sample_DB/UrU/')
+  whz="$(identify -format '%wx%hx%z' $a)" # retrieve image dimensions
+  echo "$ds # $c"
+  xxd -p $a | tr -d "\n" > $d
+  (echo -ne "$ds\t$c\t$whz\t\\\\\x"; cat $d) |\
+    $PSQL -c "COPY $table (ds, fp, whz, tif) FROM STDIN" 2>> errors.log
 done
+cd -
 
 # check whether errors were found
 if [ -s errors.log ]
 then
-  echo "Errors occurred when importing BMP images!"
+  echo "Errors occurred when importing TIFF images!"
   less errors.log
   exit 2
 fi
 
 # criar chave única
 echo "Creating unique key..."
-$PSQL -c "ALTER TABLE $table ADD UNIQUE (fp)"
+$PSQL -c "ALTER TABLE $table ADD UNIQUE (ds, fp)"
+
+TODO: terminar isso aqui!
+
+exit
 
 # complementar campos adicionais
 echo "Filling additional identifier fields..."
@@ -106,5 +106,6 @@ $PSQL -c "UPDATE $table SET mins = mdt_mins(mdt)"
 echo "Checking quality of WSQ images through NFIQ..."
 $PSQL -c "UPDATE $table SET nfiq = nfiq(wsq)"
 
+cd -
 exit 0
 
