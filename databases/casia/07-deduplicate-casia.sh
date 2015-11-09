@@ -5,8 +5,7 @@ table="casia"
 
 tmpdir="/tmp/pgafis"
 
-PSQL="/usr/local/pgsql/bin/psql $dbase -h 10.11.70.147 -U afis"
-#PSQL="/usr/local/pgsql/bin/psql $dbase"
+PSQL="/usr/local/pgsql/bin/psql $dbase"
 
 # check if several arguments were passed
 if [ $# -gt 1 ]
@@ -23,6 +22,9 @@ then
 else
   procs=1
 fi
+
+if [ "$PGHOST" != "" ]; then echo "Considering host: $PGHOST"; fi
+if [ "$PGUSER" != "" ]; then echo "Considering user: $PGUSER"; fi
 
 echo "Running script with $procs process(es)"
 inicio=`date`
@@ -44,6 +46,7 @@ maxid=`$PSQL -tA -c "SELECT max(id) FROM ${table}"`
 let chunks=procs*2
 sid=1
 eid=$chunks
+let maxid+=chunks
 
 # loop for each process
 while [ $eid -le $maxid ]
