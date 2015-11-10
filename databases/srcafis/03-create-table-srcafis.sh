@@ -80,7 +80,7 @@ WHERE ds ~ '^FVC';
 EOF
 
 # WSQ
-echo "Converting BMP images to WSQ format..."
+echo "Converting TIFF images to WSQ format..."
 echo | $PSQL -q << EOF
 UPDATE $table
 SET wsq = cwsq(tif, 2.25,
