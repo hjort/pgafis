@@ -8,7 +8,7 @@
 
 -- single logical answer for matching
 SELECT (bz_match(a.mdt, b.mdt) >= 40) AS match
-FROM atvs a, atvs b
+FROM srcafis a, srcafis b
 WHERE a.fp = 'ds2_u05_f_fo_ri_01'
   AND b.fp = 'ds2_u05_f_fo_ri_03';
 
@@ -23,7 +23,7 @@ WHERE a.fp = 'ds2_u05_f_fo_ri_01'
 SELECT score, (score >= 40) AS match
 FROM (
   SELECT bz_match(a.mdt, b.mdt) AS score
-  FROM atvs a, atvs b
+  FROM srcafis a, srcafis b
   WHERE a.id = 2041 AND b.id = 2042
 ) a;
 
@@ -41,7 +41,7 @@ FROM (
 -- all matching occurrences scored
 SELECT a.fp AS probe, b.fp AS sample,
   bz_match(a.mdt, b.mdt) AS score
-FROM atvs a, atvs b
+FROM srcafis a, srcafis b
 WHERE a.fp = 'ds2_u05_f_fo_ri_01'
   AND b.fp != a.fp
   AND bz_match(a.mdt, b.mdt) >= 40
@@ -59,7 +59,7 @@ ORDER BY score DESC;
 
 -- faster: returns a single matching!
 SELECT b.fp AS first_match
-FROM atvs a, atvs b
+FROM srcafis a, srcafis b
 WHERE a.fp = 'ds2_u05_f_fo_ri_01'
   AND b.fp != a.fp
   AND bz_match(a.mdt, b.mdt) >= 40

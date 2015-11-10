@@ -1,7 +1,7 @@
 #!/bin/bash
 
 dbase="afis"
-table="atvs"
+table="srcafis"
 
 PSQL="/usr/local/pgsql/bin/psql $dbase"
 
@@ -59,7 +59,7 @@ SELECT c.*
 FROM (
   SELECT a.id AS probe, b.id AS sample,
     bz_match(a.mdt, b.mdt) AS score
-  FROM atvs a, atvs b
+  FROM srcafis a, srcafis b
   WHERE a.id BETWEEN $sid AND $eid
     AND a.id % $procs = ${resto}
     AND b.id > a.id

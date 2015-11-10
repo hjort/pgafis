@@ -63,27 +63,27 @@ fi
 echo "Creating unique key..."
 $PSQL -c "ALTER TABLE $table ADD UNIQUE (ds, fp)"
 
-TODO: terminar isso aqui!
-
-exit
-
 # complementar campos adicionais
 echo "Filling additional identifier fields..."
 echo | $PSQL -q << EOF
 UPDATE $table
 SET
-  ds = replace(split_part(fp, '_', 1), 'ds', '')::int2,
-  pid = replace(split_part(fp, '_', 2), 'u', '')::int2,
-  of = split_part(fp, '_', 3)::char,
-  sn = split_part(fp, '_', 4)::char(2),
-  fid = split_part(fp, '_', 5)::char(2)
+  pid = split_part(fp, '_', 1)::int2,
+  fid = split_part(fp, '_', 2)::int2
+WHERE ds !~ '^FVC';
+
+UPDATE $table
+SET
+  pid = split_part(fp, '_', 1)::int2,
+  fid = 1::int2
+WHERE ds ~ '^FVC';
 EOF
 
 # WSQ
 echo "Converting BMP images to WSQ format..."
 echo | $PSQL -q << EOF
 UPDATE $table
-SET wsq = cwsq(bmp, 2.25,
+SET wsq = cwsq(tif, 2.25,
   split_part(whz, 'x', 1)::int,
   split_part(whz, 'x', 2)::int,
   split_part(whz, 'x', 3)::int,
@@ -106,6 +106,5 @@ $PSQL -c "UPDATE $table SET mins = mdt_mins(mdt)"
 echo "Checking quality of WSQ images through NFIQ..."
 $PSQL -c "UPDATE $table SET nfiq = nfiq(wsq)"
 
-cd -
 exit 0
 

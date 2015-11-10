@@ -1,19 +1,19 @@
 -- create table containing only ids and minutiae
-DROP TABLE IF EXISTS atvs_m;
-SELECT id, mdt INTO atvs_m FROM atvs;
-ALTER TABLE atvs_m ADD PRIMARY KEY (id);
+DROP TABLE IF EXISTS srcafis_m;
+SELECT id, mdt INTO srcafis_m FROM srcafis;
+ALTER TABLE srcafis_m ADD PRIMARY KEY (id);
 
 -- check table structure
-\d atvs_m
+\d srcafis_m
 
 /*
-    Table "public.atvs_m"
+    Table "public.srcafis_m"
  Column |  Type   | Modifiers 
 --------+---------+-----------
  id     | integer | not null
  mdt    | bytea   | 
 Indexes:
-    "atvs_m_pkey" PRIMARY KEY, btree (id)
+    "srcafis_m_pkey" PRIMARY KEY, btree (id)
 */
 
 -- compare size in disk for the tables
@@ -23,8 +23,8 @@ Indexes:
                           List of relations
  Schema |     Name     |   Type   | Owner |    Size    | Description 
 --------+--------------+----------+-------+------------+-------------
- public | atvs         | table    | afis  | 492 MB     | 
- public | atvs_m       | table    | afis  | 2072 kB    | 
+ public | srcafis         | table    | afis  | 492 MB     | 
+ public | srcafis_m       | table    | afis  | 2072 kB    | 
 */
 
 \timing on
@@ -34,13 +34,13 @@ Indexes:
 -- Verification (1:1)
 
 SELECT (bz_match(a.mdt, b.mdt) >= 40) AS match
-FROM atvs_m a, atvs_m b
-WHERE a.id = (SELECT id FROM atvs WHERE fp = 'ds2_u05_f_fo_ri_01')
-  AND b.id = (SELECT id FROM atvs WHERE fp = 'ds2_u05_f_fo_ri_03');
+FROM srcafis_m a, srcafis_m b
+WHERE a.id = (SELECT id FROM srcafis WHERE fp = 'ds2_u05_f_fo_ri_01')
+  AND b.id = (SELECT id FROM srcafis WHERE fp = 'ds2_u05_f_fo_ri_03');
 
 -- faster!
 SELECT (bz_match(a.mdt, b.mdt) >= 40) AS match
-FROM atvs_m a, atvs_m b
+FROM srcafis_m a, srcafis_m b
 WHERE a.id = 2041
   AND b.id = 2043;
 
@@ -52,7 +52,7 @@ WHERE a.id = 2041
 */
 
 SELECT bz_match(a.mdt, b.mdt) AS score
-FROM atvs_m a, atvs_m b
+FROM srcafis_m a, srcafis_m b
 WHERE a.id = 2041
   AND b.id = 2043;
 
@@ -69,8 +69,8 @@ WHERE a.id = 2041
 
 -- returns only first match
 SELECT b.id AS first_matching_sample
-FROM atvs_m a, atvs_m b
-WHERE a.id = (SELECT id FROM atvs WHERE fp = 'ds2_u05_f_fo_ri_01')
+FROM srcafis_m a, srcafis_m b
+WHERE a.id = (SELECT id FROM srcafis WHERE fp = 'ds2_u05_f_fo_ri_01')
   AND b.id != a.id
   AND bz_match(a.mdt, b.mdt) >= 40
 LIMIT 1;
@@ -84,7 +84,7 @@ LIMIT 1;
 
 -- faster!
 SELECT b.id AS first_matching_sample
-FROM atvs_m a, atvs_m b
+FROM srcafis_m a, srcafis_m b
 WHERE a.id = 2041
   AND b.id != a.id
   AND bz_match(a.mdt, b.mdt) >= 40
@@ -92,7 +92,7 @@ LIMIT 1;
 
 -- returns all matches
 SELECT array_agg(b.id) AS matching_samples
-FROM atvs_m a, atvs_m b
+FROM srcafis_m a, srcafis_m b
 WHERE a.id = 2041
   AND b.id != a.id
   AND bz_match(a.mdt, b.mdt) >= 40;
