@@ -22,3 +22,9 @@ do
   done
 done
 
+# workaround 3: replace fingerprint with excess of minutiae
+da="TestDatabase/FVC2000/DB3_B/110_8"
+echo "Replacing single fingerprint image..."
+mv $da.tif $da.bkp
+cp 110_8-edited.tif $da.tif
+
