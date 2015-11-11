@@ -1,65 +1,121 @@
 \timing on
 
-\d casia_d
-
 /*
+FAR (False Acceptance Rate)
+FRR (False Rejection Rate)
+EER (Equal Error Rate)
+ - Valor para o qual FAR = FRR
+ - Boa medida de qualidade
+ - FBI: classificação boa se FAR = 1% e FAR = 20%
+Ex: SourceAFIS FAR = 0.01% FRR = 10.9%
 */
 
 -- =========================================================
 
-DROP TABLE IF EXISTS casia_s;
+-- calculate FAR (False Acceptance Rate)
 
-SELECT a.id, a.db, a.fp,
-  a.db || ':' || a.fp AS dbfp,
-  a.mins, a.nfiq,
-  array_length(samples40, 1) AS m40,
-  array_length(samples60, 1) AS m60,
-  array_length(samples80, 1) AS m80,
-  array_length(samples100, 1) AS m100,
-  samples40, samples60, samples80, samples100
-INTO casia_s
-FROM casia a
-LEFT JOIN (
-  SELECT probe AS id, array_agg(sample) AS samples40
-  FROM casia_d
-  WHERE score >= 40
-  GROUP BY id
-) b ON (b.id = a.id)
-LEFT JOIN (
-  SELECT probe AS id, array_agg(sample) AS samples60
-  FROM casia_d
-  WHERE score >= 60
-  GROUP BY id
-) c ON (c.id = a.id)
-LEFT JOIN (
-  SELECT probe AS id, array_agg(sample) AS samples80
-  FROM casia_d
-  WHERE score >= 80
-  GROUP BY id
-) d ON (d.id = a.id)
-LEFT JOIN (
-  SELECT probe AS id, array_agg(sample) AS samples100
-  FROM casia_d
-  WHERE score >= 100
-  GROUP BY id
-) e ON (e.id = a.id)
-ORDER BY a.id;
+SELECT total_falsely_accepted, total_matches_performed,
+  total_falsely_accepted::numeric / total_matches_performed * 100 AS false_acceptance_rate
+FROM (
+  SELECT count(x.*) AS total_falsely_accepted, (
+    SELECT count(*) FROM casia a, casia b WHERE b.id > a.id) AS total_matches_performed
+  FROM (
+    SELECT a.id, a.pid, a.fid, b.score, c.id, c.pid, c.fid, 'P'::char AS ps
+    FROM casia a
+      JOIN casia_d b ON (b.probe = a.id) -- probe
+      JOIN casia c ON (c.id = b.sample)
+    WHERE b.score >= 40 -- threshold for matching
+      AND NOT (a.pid = c.pid AND a.fid = c.fid) -- falsely accepted
+      --AND a.pid = 1 AND a.fid = 'R0' -- for debugging
+    UNION
+    SELECT a.id, a.pid, a.fid, b.score, c.id, c.pid, c.fid, 'S'
+    FROM casia a
+      JOIN casia_d b ON (b.sample = a.id) -- sample
+      JOIN casia c ON (c.id = b.probe)
+    WHERE b.score >= 40 -- threshold for matching
+      AND NOT (a.pid = c.pid AND a.fid = c.fid) -- falsely accepted
+      --AND a.pid = 1 AND a.fid = 'R0' -- for debugging
+  ) x
+) y;
 
-ALTER TABLE casia_s ADD PRIMARY KEY (id);
+/*
+score >= 40
+ total_falsely_accepted | total_matches_performed |   false_acceptance_rate    
+------------------------+-------------------------+----------------------------
+                  11218 |               199990000 | 0.005609280464023201160100
 
-\d casia_s
+score >= 60
+ total_falsely_accepted | total_matches_performed |   false_acceptance_rate    
+------------------------+-------------------------+----------------------------
+                    208 |               199990000 | 0.000104005200260013000700
 
-SELECT id, dbfp, mins, nfiq, m40, m60, m80, m100,
-  samples40, samples100
-FROM casia_s
-ORDER BY id;
-
-SELECT db,
-  trunc(avg(m40),2) AS m40, trunc(avg(m60),2) AS m60,
-  trunc(avg(m80),2) AS m80, trunc(avg(m100),2) AS m100
-FROM casia_s
-GROUP BY db
-ORDER BY db;
+score >= 80
+ total_falsely_accepted | total_matches_performed |   false_acceptance_rate    
+------------------------+-------------------------+----------------------------
+                      8 |               199990000 | 0.000004000200010000500000
+*/
 
 -- =========================================================
+
+-- FRR (False Rejection Rate)
+
+SELECT total_correctly_accepted, total_matches_performed,
+  (1 - total_correctly_accepted::numeric / total_matches_performed) * 100 AS false_rejection_rate
+FROM (
+  SELECT count(x.*) AS total_correctly_accepted, (
+    SELECT count(*) FROM casia a, casia b WHERE b.id > a.id
+      --AND a.pid = 1 AND a.fid = 'R0' AND b.pid = 1 AND b.fid = 'R0' -- for debugging
+      --AND a.pid = 1 AND a.fid IN ('R0', 'L0') AND b.pid = 1 AND b.fid IN ('R0', 'L0') -- for debugging
+    ) AS total_matches_performed
+  FROM (
+    SELECT a.id, a.pid, a.fid, /*b.probe,*/ b.score, /*b.sample,*/ c.id, c.pid, c.fid
+    FROM casia a
+      JOIN casia_d b ON (b.probe = a.id)
+      JOIN casia c ON (c.id = b.sample OR c.id = b.probe)
+    WHERE b.score >= 40 -- threshold for matching
+      AND a.pid = c.pid AND a.fid = c.fid -- correctly accepted
+      --AND a.pid = 1 AND a.fid = 'R0' -- for debugging
+      --AND a.pid = 1 AND a.fid IN ('R0', 'L0') -- for debugging
+      AND a.id != c.id
+  ) x
+) y;
+
+/*
+score >= 40
+
+score >= 60
+
+score >= 80
+*/
+
+
+/*
+SELECT a.id, b.id
+FROM casia a, casia b
+WHERE b.id > a.id
+  AND a.pid = 1 AND a.fid = 'R0'
+  AND b.pid = 1 AND b.fid = 'R0'
+ORDER BY 1, 2;
+
+SELECT count(*)
+FROM casia a, casia b
+WHERE b.id > a.id
+  AND a.pid = 1 AND a.fid = 'R0'
+  AND b.pid = 1 AND b.fid = 'R0';
+
+SELECT a.id, a.pid, a.fid
+FROM casia a
+WHERE a.pid = 1 AND a.fid IN ('R0', 'L0')
+ORDER BY 1, 2;
+
+SELECT a.id, b.id
+FROM casia a, casia b
+WHERE b.id > a.id
+  AND a.pid = 1 AND a.fid IN ('R0', 'L0')
+  AND b.pid = 1 AND b.fid IN ('R0', 'L0')
+ORDER BY 1, 2;
+*/
+
+-- =========================================================
+
 
