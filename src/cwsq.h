@@ -69,3 +69,4 @@ pg_wsq_encode(PG_FUNCTION_ARGS)
 
 	PG_RETURN_BYTEA_P(res);
 }
+

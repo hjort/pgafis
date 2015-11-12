@@ -254,3 +254,4 @@ int mdt_encode_minutiae(uchar **odata, int *osize, const MINUTIAE *minutiae)
 
 	return(0);
 }
+

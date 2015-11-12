@@ -121,3 +121,4 @@ pg_bz_match_bytea(PG_FUNCTION_ARGS)
 
 	PG_RETURN_INT32(score);
 }
+

@@ -48,7 +48,7 @@ pg_nfiq(PG_FUNCTION_ARGS)
 
 	/* Compute the NFIQ value */
 	elog(DEBUG2, "comp_nfiq()");
-	ret = comp_nfiq(&nfiq, &conf, data, iw, ih, id, ippi, &verbose); // &flags.verbose);
+	ret = comp_nfiq(&nfiq, &conf, data, iw, ih, id, ippi, &verbose);
 	if (debug > 0)
 		elog(DEBUG1, "ret: %d, w,h,d,ppi: %d,%d,%d,%d", ret, iw, ih, id, ippi);
 	// if system error...
