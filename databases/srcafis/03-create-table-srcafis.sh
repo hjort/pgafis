@@ -62,6 +62,7 @@ fi
 # criar chave única
 echo "Creating unique key..."
 $PSQL -c "ALTER TABLE $table ADD UNIQUE (ds, fp)"
+$PSQL -c "CREATE INDEX ON $table (ds, pid, fid)"
 
 # complementar campos adicionais
 echo "Filling additional identifier fields..."

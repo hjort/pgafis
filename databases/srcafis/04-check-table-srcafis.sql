@@ -20,6 +20,7 @@
 Indexes:
     "srcafis_pkey" PRIMARY KEY, btree (id)
     "srcafis_ds_fp_key" UNIQUE CONSTRAINT, btree (ds, fp)
+    "srcafis_ds_pid_fid_idx" btree (ds, pid, fid)
 */
 
 -- =========================================================
@@ -35,23 +36,6 @@ SELECT id, ds, fp, pid, fid,
 FROM srcafis
 ORDER BY id
 LIMIT 10;
-
-/*
-*/
-
--- =========================================================
-
--- verificação de algumas digitais aleatórias
-SELECT id, ds, fp, pid, fid,
-  length(tif) AS tif_bytes,
-  length(wsq) AS wsq_bytes,
-  length(mdt) AS mdt_bytes,
-  length(xyt) AS xyt_chars,
-  mins,
-  nfiq
-FROM srcafis
-ORDER BY random()
-LIMIT 15;
 
 /*
  id |      ds       |    fp    | pid | fid |  tif  |  wsq  |    mdt    |    xyt     | mins | nfiq 
@@ -71,6 +55,41 @@ LIMIT 15;
 
 -- =========================================================
 
+-- verificação de algumas digitais aleatórias
+SELECT id, ds, fp, pid, fid,
+  length(tif) AS tif_bytes,
+  length(wsq) AS wsq_bytes,
+  length(mdt) AS mdt_bytes,
+  length(xyt) AS xyt_chars,
+  mins,
+  nfiq
+FROM srcafis
+ORDER BY random()
+LIMIT 15;
+
+/*
+  id  |      ds       |    fp    | pid | fid | tif_bytes | wsq_bytes | mdt_bytes | xyt_chars | mins | nfiq 
+------+---------------+----------+-----+-----+-----------+-----------+-----------+-----------+------+------
+  366 | FVC2004/DB2_B | 108_4    | 108 |   1 |    119904 |     33214 |       458 |       774 |   57 |    5
+  164 | FVC2000/DB1_B | 105_3    | 105 |   1 |     90512 |     27764 |       354 |       591 |   44 |    5
+ 1532 | Neurotech/UrU | 076_9_8  |  76 |   9 |    116788 |     25166 |       506 |       878 |   63 |    5
+ 1789 | FVC2002/DB4_B | 109_7    | 109 |   1 |    111104 |     20860 |       546 |       939 |   68 |    5
+ 1122 | Neurotech/UrU | 022_4_7  |  22 |   4 |    116788 |     24788 |       370 |       627 |   46 |    3
+ 1219 | Neurotech/UrU | 012_7_1  |  12 |   7 |    116788 |     27105 |       386 |       676 |   48 |    5
+  582 | FVC2004/DB3_B | 108_3    | 108 |   1 |    144512 |     36868 |       714 |      1227 |   89 |    4
+  815 | Neurotech/CM  | 045_5_7  |  45 |   5 |    242450 |     41658 |       762 |      1344 |   95 |    3
+ 1075 | Neurotech/UrU | 022_3_6  |  22 |   3 |    116788 |     25302 |       410 |       685 |   51 |    5
+ 1578 | Donated1      | 999_2_3  | 999 |   2 |    220384 |     20097 |       634 |      1062 |   79 |    5
+  218 | FVC2000/DB1_B | 110_8    | 110 |   1 |     90512 |     28403 |       378 |       639 |   47 |    5
+ 1946 | FVC2002/DB3_B | 108_7    | 108 |   1 |     90512 |     21954 |       818 |      1399 |  102 |    5
+ 1425 | Neurotech/UrU | 013_8_3  |  13 |   8 |    116788 |     30153 |       658 |      1141 |   82 |    5
+ 1170 | Neurotech/UrU | 017_1_4  |  17 |   1 |    116788 |     24110 |       394 |       677 |   49 |    5
+ 1765 | FVC2002/DB4_B | 104_6    | 104 |   1 |    111104 |     26314 |       330 |       555 |   41 |    3
+(15 rows)
+*/
+
+-- =========================================================
+
 -- verificação da amostra por base de dados
 SELECT ds,
   pg_size_pretty(avg(length(tif))) AS tif,
@@ -78,29 +97,30 @@ SELECT ds,
   pg_size_pretty(trunc(avg(length(mdt)))) AS mdt,
   pg_size_pretty(trunc(avg(length(xyt)))) AS xyt,
   trunc(avg(mins), 2) AS mins,
-  trunc(avg(nfiq), 2) AS nfiq
+  trunc(avg(nfiq), 2) AS nfiq,
+  count(1)
 FROM srcafis
 GROUP BY ds
 ORDER BY ds;
 
 /*
-      ds       |  tif   |  wsq  |    mdt     |    xyt     |  mins  | nfiq 
----------------+--------+-------+------------+------------+--------+------
- Donated1      | 212 kB | 19 kB | 589 bytes  | 974 bytes  |  73.43 | 5.00
- FVC2000/DB1_B | 88 kB  | 27 kB | 422 bytes  | 714 bytes  |  52.50 | 5.00
- FVC2000/DB2_B | 92 kB  | 23 kB | 462 bytes  | 781 bytes  |  57.50 | 2.63
- FVC2000/DB3_B | 210 kB | 52 kB | 1283 bytes | 2198 bytes | 160.16 | 4.26
- FVC2000/DB4_B | 86 kB  | 20 kB | 278 bytes  | 477 bytes  |  34.57 | 4.32
- FVC2002/DB1_B | 142 kB | 28 kB | 356 bytes  | 617 bytes  |  44.28 | 4.86
- FVC2002/DB2_B | 162 kB | 36 kB | 518 bytes  | 892 bytes  |  64.53 | 2.76
- FVC2002/DB3_B | 88 kB  | 22 kB | 615 bytes  | 1033 bytes |  76.63 | 4.92
- FVC2002/DB4_B | 109 kB | 22 kB | 382 bytes  | 645 bytes  |  47.50 | 4.86
- FVC2004/DB1_B | 301 kB | 32 kB | 436 bytes  | 757 bytes  |  54.28 | 3.30
- FVC2004/DB2_B | 117 kB | 31 kB | 410 bytes  | 699 bytes  |  51.11 | 5.00
- FVC2004/DB3_B | 141 kB | 30 kB | 732 bytes  | 1258 bytes |  91.35 | 3.21
- FVC2004/DB4_B | 109 kB | 26 kB | 473 bytes  | 803 bytes  |  58.97 | 4.92
- Neurotech/CM  | 237 kB | 36 kB | 556 bytes  | 980 bytes  |  69.28 | 2.23
- Neurotech/UrU | 114 kB | 26 kB | 472 bytes  | 811 bytes  |  58.79 | 4.75
+      ds       |  tif   |  wsq  |    mdt     |    xyt     |  mins  | nfiq | count 
+---------------+--------+-------+------------+------------+--------+------+-------
+ Donated1      | 212 kB | 19 kB | 589 bytes  | 974 bytes  |  73.43 | 5.00 |    72
+ FVC2000/DB1_B | 88 kB  | 27 kB | 422 bytes  | 714 bytes  |  52.50 | 5.00 |    80
+ FVC2000/DB2_B | 92 kB  | 23 kB | 462 bytes  | 781 bytes  |  57.50 | 2.63 |    80
+ FVC2000/DB3_B | 210 kB | 52 kB | 1283 bytes | 2198 bytes | 160.16 | 4.26 |    80
+ FVC2000/DB4_B | 86 kB  | 20 kB | 278 bytes  | 477 bytes  |  34.57 | 4.32 |    80
+ FVC2002/DB1_B | 142 kB | 28 kB | 356 bytes  | 617 bytes  |  44.28 | 4.86 |    80
+ FVC2002/DB2_B | 162 kB | 36 kB | 518 bytes  | 892 bytes  |  64.53 | 2.76 |    80
+ FVC2002/DB3_B | 88 kB  | 22 kB | 615 bytes  | 1033 bytes |  76.63 | 4.92 |    80
+ FVC2002/DB4_B | 109 kB | 22 kB | 382 bytes  | 645 bytes  |  47.50 | 4.86 |    80
+ FVC2004/DB1_B | 301 kB | 32 kB | 436 bytes  | 757 bytes  |  54.28 | 3.30 |    80
+ FVC2004/DB2_B | 117 kB | 31 kB | 410 bytes  | 699 bytes  |  51.11 | 5.00 |    80
+ FVC2004/DB3_B | 141 kB | 30 kB | 732 bytes  | 1258 bytes |  91.35 | 3.21 |    80
+ FVC2004/DB4_B | 109 kB | 26 kB | 473 bytes  | 803 bytes  |  58.97 | 4.92 |    80
+ Neurotech/CM  | 237 kB | 36 kB | 556 bytes  | 980 bytes  |  69.28 | 2.23 |   408
+ Neurotech/UrU | 114 kB | 26 kB | 472 bytes  | 811 bytes  |  58.79 | 4.75 |   520
 (15 rows)
 */
 
