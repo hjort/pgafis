@@ -3,12 +3,11 @@
 db="$1"
 dt="$2"
 
-SQL=
-"SELECT coalesce(
+echo "SELECT trunc(coalesce(
   sum(w.false_acceptance_rate_over_n) / (
     SELECT count(1) FROM srcafis
     WHERE ds = '$db'
-  ), 0.0) AS false_acceptance_rate
+  ), 0.0), 5) AS false_acceptance_rate
 FROM (
   SELECT z.id, z.pid, z.fid,
     z.total_fraud_attempts_against_n, z.total_successful_frauds_against_n,
@@ -54,4 +53,3 @@ FROM (
   ) z
 ) w"
 
-echo $SQL
