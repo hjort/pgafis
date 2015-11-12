@@ -18,6 +18,7 @@
 Indexes:
     "casia_pkey" PRIMARY KEY, btree (id)
     "casia_fp_key" UNIQUE CONSTRAINT, btree (fp)
+    "casia_pid_fid_idx" btree (pid, fid)
 */
 
 -- =========================================================
