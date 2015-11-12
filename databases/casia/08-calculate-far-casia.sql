@@ -1,3 +1,5 @@
+-- calculate FAR (False Acceptance Rate)
+
 \timing on
 
 /*
@@ -11,8 +13,6 @@ Ex: SourceAFIS FAR = 0.01%, FRR = 10.9%
 */
 
 -- ====================================================================================================
-
--- calculate FAR (False Acceptance Rate)
 
 -- [n]: a given fingerprint image => i.e., a record in "casia" table
 
@@ -97,6 +97,8 @@ FROM (
   ) x
 ) y;
 
+-- ====================================================================================================
+
 -- FAR (considering the whole dataset will all N subjects)
 
 SELECT sum(w.false_acceptance_rate_over_n) / (
@@ -141,7 +143,7 @@ FROM (
         WHERE c.pid = b.pid AND c.fid = b.fid
       )
       AND n.id <= 100 -- for debugging purposes
---      AND n.id IN (1720, 1464, 492)
+      --AND n.id IN (1720, 1464, 492)
     GROUP BY n.id, n.pid, n.fid
   ) z
 ) w;
@@ -187,7 +189,11 @@ FROM (
   ) z
 ) w;
 
+-- ====================================================================================================
+
 /*
+Results
+
 DT: score >= 40
    false_acceptance_rate    
 ----------------------------
