@@ -7,7 +7,7 @@ int main(void) {
 	ushort a, b, c;
 
 	a = 22;
-	b = 2840;
+	b = 2570;
 	c = 293000;
 
 	printf("sizeof(ushort): %d\n", sizeof(ushort));
