@@ -8,7 +8,7 @@ PSQL='/usr/local/pgsql/bin/psql afis'
 
 # TIF
 echo "Extracting TIF..."
-c="110_8-db"
+c="110_4-db"
 d="$c.hex"
 e="$c.tif"
 $PSQL -c "SELECT encode(tif, 'hex') FROM $tabela" -At | tr -d '\n' > $d

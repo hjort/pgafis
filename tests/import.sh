@@ -14,7 +14,7 @@ CREATE TABLE $tabela (
 )"
 
 # TIF
-a="110_8.tif"
+a="110_4.tif"
 d="${a/.tif/.hex}"
 xxd -p $a | tr -d "\n" > $d
 (echo -ne "\\\\\x"; cat $d) | $PSQL -c "COPY $tabela (tif) FROM STDIN"
