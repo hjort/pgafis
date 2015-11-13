@@ -26,5 +26,5 @@ extern Datum pg_bz_match_bytea(PG_FUNCTION_ARGS);
 #include "match.h"
 #include "mdt.h"
 
-int debug = 0;
+int debug = 1;
 
