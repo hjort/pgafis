@@ -1,7 +1,7 @@
 CFLAGS=-I/opt/nbis-5.0.0/include -L/opt/nbis-5.0.0/lib -g
 #CFLAGS=-I/opt/nbis-4.2.0/include -L/opt/nbis-4.2.0/lib -g
 
-all: bz ct uc us nq
+all: bz ct uc us ui nq
 
 bz: bz.c
 	gcc bz.c ${CFLAGS} -lbozorth3 -lm -o bz

@@ -8,7 +8,7 @@ int main(void) {
 
 	a = 22;
 	b = 284;
-	c = 293;
+	c = 2930;
 
 	printf("sizeof(uchar): %d\n", sizeof(uchar));
 	printf("a: %d, b: %d, c: %d\n", a, b, c);
