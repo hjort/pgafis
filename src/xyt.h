@@ -174,8 +174,12 @@ struct xyt_struct * load_xyt_binary(uchar *data, unsigned size)
 int is_minutiae_data(uchar *data, unsigned size)
 {
 	int explen, qty;
+
 	qty = (ushort) *data;
 	explen = sizeof(ushort) * (1 + qty * 4); // header + 4 valores por minúcia
+
+	elog(DEBUG2, "is_minutiae_data(size=%d): qty=%d, explen=%d", size, qty, explen);
+
 	return(size == explen);
 }
 
