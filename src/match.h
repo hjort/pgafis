@@ -117,7 +117,7 @@ pg_bz_match_bytea(PG_FUNCTION_ARGS)
 		free((char *) gs);
 
 	if (debug > 0)
-		elog(DEBUG1, "score: %d", score);
+		elog(DEBUG2, "score: %d", score);
 
 	PG_RETURN_INT32(score);
 }

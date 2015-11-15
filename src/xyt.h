@@ -26,7 +26,7 @@ struct xyt_struct * load_xyt(char *str)
 		qvals_lng[MAX_FILE_MINUTIAE];
 	char xyt_line[MAX_LINE_LENGTH];
 
-	elog(DEBUG1, "load_xyt()");
+	elog(DEBUG2, "load_xyt()");
 
 	nminutiae = 0;
 	nargs_expected = 0;
@@ -131,7 +131,7 @@ struct xyt_struct * load_xyt_binary(uchar *data, unsigned size)
 	struct xyt_struct * xyt_s;
 	struct xytq_struct * xytq_s;
 
-	elog(DEBUG1, "load_xyt_binary(): size = %d", size);
+	elog(DEBUG2, "load_xyt_binary(): size = %d", size);
 
 	pdata = (ushort *) data;
 	qty = (int) *pdata++;
@@ -143,10 +143,9 @@ struct xyt_struct * load_xyt_binary(uchar *data, unsigned size)
 		return XYT_NULL;
 	}
 
-	if (debug > 0) {
-		elog(DEBUG1, "Total de minúcias: %d", qty);
+	elog(DEBUG2, "minutiae = %d", qty);
+	if (debug > 0)
 		elog(DEBUG2, "No =>  X   Y   T   Q");
-	}
 
 	xytq_s->nrows = qty;
 	for (i = 0; i < qty; i++)
@@ -173,12 +172,13 @@ struct xyt_struct * load_xyt_binary(uchar *data, unsigned size)
 
 int is_minutiae_data(uchar *data, unsigned size)
 {
-	int explen, qty;
+	int explen = 0;
+	ushort qty = 0, *pqty = data;
 
-	qty = (ushort) *data;
+	qty = *pqty;
 	explen = sizeof(ushort) * (1 + qty * 4); // header + 4 valores por minúcia
 
-	elog(DEBUG2, "is_minutiae_data(size=%d): qty=%d, explen=%d", size, qty, explen);
+	//elog(DEBUG2, "is_minutiae_data(size=%d): qty=%d, explen=%d", size, qty, explen);
 
 	return(size == explen);
 }
@@ -189,7 +189,7 @@ struct xytq_struct * load_xytq_binary(uchar *data, unsigned size)
 	ushort *pdata;
 	struct xytq_struct *xytq_s;
 
-	elog(DEBUG1, "load_xytq_binary(): size = %d", size);
+	elog(DEBUG2, "load_xytq_binary(): size = %d", size);
 
 	pdata = (ushort *) data;
 	qty = *pdata++;
@@ -201,10 +201,9 @@ struct xytq_struct * load_xytq_binary(uchar *data, unsigned size)
 		return XYTQ_NULL;
 	}
 
-	if (debug > 0) {
-		elog(DEBUG1, "minutiae = %d", qty);
+	elog(DEBUG2, "minutiae = %d", qty);
+	if (debug > 0)
 		elog(DEBUG2, "No =>  X   Y   T   Q");
-	}
 
 	xytq_s->nrows = qty;
 	for (i = 0; i < qty; i++)

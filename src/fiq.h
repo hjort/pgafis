@@ -34,7 +34,7 @@ pg_nfiq(PG_FUNCTION_ARGS)
 	data = (unsigned char *) VARDATA(image);
 
 	if (debug > 0)
-		elog(DEBUG1, "image: %x, size: %d, data: %x",
+		elog(DEBUG2, "image: %x, size: %d, data: %x",
 			(unsigned) image, size, (unsigned) data);
 
 	// Decode the image data from memory
@@ -50,7 +50,7 @@ pg_nfiq(PG_FUNCTION_ARGS)
 	elog(DEBUG2, "comp_nfiq()");
 	ret = comp_nfiq(&nfiq, &conf, data, iw, ih, id, ippi, &verbose);
 	if (debug > 0)
-		elog(DEBUG1, "ret: %d, w,h,d,ppi: %d,%d,%d,%d", ret, iw, ih, id, ippi);
+		elog(DEBUG2, "ret: %d, w,h,d,ppi: %d,%d,%d,%d", ret, iw, ih, id, ippi);
 	// if system error...
 	if (ret < 0) {
 		elog(ERROR, "A system error occurred when computing the NFIQ value: %d", ret);
@@ -62,7 +62,7 @@ pg_nfiq(PG_FUNCTION_ARGS)
 	free(ndata);
 
 	if (debug > 0)
-		elog(DEBUG1, "nfiq: %d, conf: %4.2f", nfiq, conf);
+		elog(DEBUG2, "nfiq: %d, conf: %4.2f", nfiq, conf);
 
 	PG_RETURN_INT32((int32) nfiq);
 }

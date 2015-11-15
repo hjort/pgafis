@@ -30,9 +30,9 @@ pg_mdt_text(PG_FUNCTION_ARGS)
 	idata = (uchar *) VARDATA(mdt);
 
 	elog(DEBUG1, "pg_mdt_text(): size = %d", isize);
-	if (debug > 0)
+	/*if (debug > 0)
 		elog(DEBUG1, "mdt: %x, isize: %d, idata: %x",
-			(unsigned) mdt, isize, (unsigned) idata);
+			(unsigned) mdt, isize, (unsigned) idata);*/
 
 	// check data validity
 	if (!is_minutiae_data(idata, isize)) {
@@ -46,9 +46,9 @@ pg_mdt_text(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	if (debug > 0)
+	/*if (debug > 0)
 		elog(DEBUG1, "osize: %d, odata: %x",
-			osize, (unsigned) odata);
+			osize, (unsigned) odata);*/
 
 	// initialize result buffer
 	res = (text *) palloc(osize + VARHDRSZ);
@@ -70,7 +70,7 @@ int convert_xyt_binary_text(uchar **odata, unsigned *osize, uchar *idata, unsign
 	char *txt;
 	unsigned len = 0;
 
-	elog(DEBUG1, "convert_xyt_binary_text(): size = %d", isize);
+	elog(DEBUG2, "convert_xyt_binary_text(): size = %d", isize);
 
 	xytq_s = load_xytq_binary(idata, isize);
 	if (xytq_s == XYTQ_NULL)
@@ -87,8 +87,8 @@ int convert_xyt_binary_text(uchar **odata, unsigned *osize, uchar *idata, unsign
 	len = 0;
 
 	if (debug > 0) {
-		elog(DEBUG1, "total_minutiae = %d", total_minutiae);
-		elog(DEBUG2, "No =>  X   Y   T   Q");
+		elog(DEBUG2, "total_minutiae = %d", total_minutiae);
+		//elog(DEBUG2, "No =>  X   Y   T   Q");
 	}
 
 	for (i = 0; i < total_minutiae; i++)
@@ -100,8 +100,8 @@ int convert_xyt_binary_text(uchar **odata, unsigned *osize, uchar *idata, unsign
 			xytq_s->thetacol[i], xytq_s->qualitycol[i]);
 		strcat(txt, xyt_line);
 		len += strlen(xyt_line) + 1;
-		if (debug > 0)
-			elog(DEBUG2, "%s", xyt_line);
+		/*if (debug > 0)
+			elog(DEBUG2, "%s", xyt_line);*/
 	}
 
 	if (xytq_s != XYTQ_NULL)
@@ -121,7 +121,7 @@ pg_mdt_mincnt(PG_FUNCTION_ARGS)
 	bytea *mdt;
 	unsigned isize = 0;
 	uchar *idata = NULL;
-	ushort count = 0;
+	ushort count = 0, *pdata = NULL;
 
 	// read MDT parameter
 	mdt = PG_GETARG_BYTEA_P(0);
@@ -129,9 +129,9 @@ pg_mdt_mincnt(PG_FUNCTION_ARGS)
 	idata = (uchar *) VARDATA(mdt);
 
 	elog(DEBUG1, "pg_mdt_mincnt(): size = %d", isize);
-	if (debug > 0)
+	/*if (debug > 0)
 		elog(DEBUG1, "mdt: %x, isize: %d, idata: %x",
-			(unsigned) mdt, isize, (unsigned) idata);
+			(unsigned) mdt, isize, (unsigned) idata);*/
 
 	// check data validity
 	if (!is_minutiae_data(idata, isize)) {
@@ -139,8 +139,9 @@ pg_mdt_mincnt(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	// read first byte (i.e., number of minutiae)
-	count = (ushort) *idata;
+	// read first 2 bytes (i.e., number of minutiae)
+	pdata = idata;
+	count = *pdata;
 
 	PG_RETURN_INT32(count);
 }

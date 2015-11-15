@@ -40,14 +40,14 @@ pg_min_detect(PG_FUNCTION_ARGS)
 
 	elog(DEBUG1, "pg_min_detect(): size = %d", isize);
 
-	if (debug > 0)
+	/*if (debug > 0)
 		elog(DEBUG1, "wsq: %x, isize: %d, idata: %x",
-			(unsigned) wsq, isize, (unsigned) idata);
+			(unsigned) wsq, isize, (unsigned) idata);*/
 
 	// read boost parameter
 	boost = PG_ARGISNULL(1) ? FALSE : PG_GETARG_BOOL(1);
-	if (debug > 0)
-		elog(DEBUG1, "boost: %d", boost);
+	//if (debug > 0)
+	elog(DEBUG2, "boost: %d", boost);
 
 	if (!is_wsq_type(idata, isize)) {
 		elog(ERROR, "Illegal image type (not in WSQ format)");
@@ -55,7 +55,7 @@ pg_min_detect(PG_FUNCTION_ARGS)
 	}
 
 	if (debug > 0)
-		elog(DEBUG1, "Extracting minutiae...");
+		elog(DEBUG2, "Extracting minutiae...");
 
 	if ((ret = extract_minutiae_xytq(&odata, (int *) &osize,
 			idata, isize, boost))) {
@@ -63,7 +63,7 @@ pg_min_detect(PG_FUNCTION_ARGS)
 	}
 
 	if (debug > 0)
-		elog(DEBUG1, "Minutiae data extracted, byte length = %d", osize);
+		elog(DEBUG2, "Minutiae data extracted, byte length = %d", osize);
 
 	// initialize result buffer
 	res = (bytea *) palloc(osize + VARHDRSZ);
@@ -226,9 +226,8 @@ int mdt_encode_minutiae(uchar **odata, int *osize, const MINUTIAE *minutiae)
 	qty = minutiae->num;
 
 	elog(DEBUG1, "mdt_encode_minutiae(): qty = %d", qty);
-	if (debug > 0) {
-		elog(DEBUG1, "No =>  X   Y   T   Q");
-	}
+	if (debug > 0)
+		elog(DEBUG2, "No =>  X   Y   T   Q");
 
 	len = 1 + qty * 4; // header + 4 valores por minúcia
 	siz = sizeof(ushort) * len;
@@ -237,12 +236,15 @@ int mdt_encode_minutiae(uchar **odata, int *osize, const MINUTIAE *minutiae)
 	memset(mdt, 0, siz);
 
 	*pmdt++ = (ushort) qty;
+
 	for (i = 0; i < qty; i++) {
 		minutia = minutiae->list[i];
 		lfs2m1_minutia_XYT((int*) &ox, (int*) &oy, (int*) &ot, minutia);
 		oq = sround(minutia->reliability * 100.0);
+
 		if (debug > 0)
-			elog(DEBUG1, "%2d => %3d %3d %3d %2d", i+1, ox, oy, ot, oq);
+			elog(DEBUG2, "%2d => %3d %3d %3d %2d", i+1, ox, oy, ot, oq);
+
 		*pmdt++ = (ushort) ox;
 		*pmdt++ = (ushort) oy;
 		*pmdt++ = (ushort) ot;

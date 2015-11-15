@@ -35,7 +35,7 @@ pg_wsq_encode(PG_FUNCTION_ARGS)
 	elog(DEBUG1, "pg_wsq_encode(): size = %d", isize);
 
 	if (debug > 0)
-		elog(DEBUG1, "image: %x, isize: %d, idata: %x",
+		elog(DEBUG2, "image: %x, isize: %d, idata: %x",
 			(unsigned) image, isize, (unsigned) idata);
 
 	// read remaining function parameters
@@ -46,7 +46,7 @@ pg_wsq_encode(PG_FUNCTION_ARGS)
 	ppi = PG_ARGISNULL(5) ? -1 : PG_GETARG_INT32(5);
 
 	if (debug > 0)
-		elog(DEBUG1, "bitrate: %.2f, width: %d, height: %d, depth: %d, ppi: %d",
+		elog(DEBUG2, "bitrate: %.2f, width: %d, height: %d, depth: %d, ppi: %d",
 			bitrate, width, height, depth, ppi);
 
 	// encode/compress the image pixmap
@@ -56,7 +56,7 @@ pg_wsq_encode(PG_FUNCTION_ARGS)
 	}
 
 	if (debug > 0)
-		elog(DEBUG1, "Image data encoded, compressed byte length = %d", osize);
+		elog(DEBUG2, "Image data encoded, compressed byte length = %d", osize);
 
 	// initialize result buffer
 	res = (bytea *) palloc(osize + VARHDRSZ);
