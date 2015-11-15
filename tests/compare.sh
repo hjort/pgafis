@@ -1,7 +1,8 @@
 #!/bin/bash
 
-a="110_4"
-b="$a-db"
+for a in 110_4 110_8
+do
+  b="$a-db"
 
 # TIF
 echo "Comparing TIF..."
@@ -23,6 +24,8 @@ echo "Comparing XYT..."
 diff $a*.xyt
 hd $a.xyt | head -5; echo; hd $b.xyt | head -5
 echo
+
+done
 
 exit 0
 

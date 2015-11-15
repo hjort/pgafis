@@ -9,15 +9,20 @@ $PSQL -c "
 DROP TABLE IF EXISTS $tabela;
 CREATE TABLE $tabela (
   id serial not null primary key,
+  fp varchar(10),
   tif bytea, wsq bytea, mdt bytea, xyt text,
   mins int2, nfiq int2
 )"
 
-# TIF
-a="110_4.tif"
-d="${a/.tif/.hex}"
-xxd -p $a | tr -d "\n" > $d
-(echo -ne "\\\\\x"; cat $d) | $PSQL -c "COPY $tabela (tif) FROM STDIN"
+for a in 110_4 110_8
+do
+  c="$a.tif"
+  d="${c/.tif/.hex}"
+
+  # TIF
+  xxd -p $c | tr -d "\n" > $d
+  (echo -ne "$a\t\\\\\x"; cat $d) | $PSQL -c "COPY $tabela (fp, tif) FROM STDIN"
+done
 
 # WSQ
 $PSQL -c "UPDATE $tabela SET wsq = cwsq(tif, 2.25, 448, 478, 8, null)"
@@ -35,7 +40,7 @@ $PSQL -c "UPDATE $tabela SET mins = mdt_mins(mdt)"
 $PSQL -c "UPDATE $tabela SET nfiq = nfiq(mdt)"
 
 # verificação dos valores
-$PSQL -c "SELECT id,
+$PSQL -c "SELECT id, fp,
   length(tif) AS tif_bytes,
   length(wsq) AS wsq_bytes,
   length(mdt) AS mdt_bytes,
