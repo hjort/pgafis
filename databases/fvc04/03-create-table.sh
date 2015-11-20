@@ -34,7 +34,7 @@ do
 	echo "DB_$i ========================================================"
 	dbd="$tmpdir/db${i}"
 	mkdir -p $dbd/tif/ $dbd/hex/
-	cp -R db${i}/*.tif $dbd/tif/
+	cp -R images/db${i}/*.tif $dbd/tif/
 	for a in $dbd/tif/*.tif
 	do
 		b="`basename $a`"

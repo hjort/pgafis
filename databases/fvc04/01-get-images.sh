@@ -20,13 +20,13 @@ do
 done
 
 # excluir diretórios
-rm -rf db?
+rm -rf images/
 
 # extrair arquivos
 for i in `seq 1 4`
 do
-  mkdir db$i
-  unzip zips/DB${i}_B.zip -d db$i/
+  mkdir images/db$i
+  unzip zips/DB${i}_B.zip -d images/db$i/
 done
 
 exit 0
