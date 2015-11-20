@@ -88,14 +88,16 @@ FROM casia l
       FROM (
         SELECT b.id, count(1) AS total
         FROM casia a JOIN casia b ON (b.pid = a.pid AND b.fid = a.fid)
-          JOIN casia_d p ON (p.sample = b.id AND p.probe = a.id AND p.score <= 80)
+          JOIN casia_d p ON (p.sample = b.id AND p.probe = a.id)
         WHERE a.id != b.id
+          AND p.score >= 80
         GROUP BY b.id
         UNION
         SELECT b.id, count(1) AS total
         FROM casia a JOIN casia b ON (b.pid = a.pid AND b.fid = a.fid)
-          JOIN casia_d p ON (p.probe = b.id AND p.sample = a.id AND p.score <= 80)
+          JOIN casia_d p ON (p.probe = b.id AND p.sample = a.id)
         WHERE a.id != b.id
+          AND p.score >= 80
         GROUP BY b.id
       ) x
       GROUP BY x.id
@@ -113,32 +115,46 @@ FROM casia l
 
 -- ====================================================================================================
 
+-- FRR (faster)
+
+SELECT sum(coalesce(k.false_rejection_rate_over_n, 1.0)) / 20000 * 100 AS false_rejection_rate
+FROM casia l
+  LEFT JOIN (
+    SELECT y.id,
+      4 AS total_genuine_attempts_against_n, y.total_genuine_acceptances_over_n,
+      4 - y.total_genuine_acceptances_over_n AS total_invalid_rejections_against_n,
+      (4 - y.total_genuine_acceptances_over_n)::numeric / 4 AS false_rejection_rate_over_n
+    FROM (
+      SELECT x.id, sum(total) AS total_genuine_acceptances_over_n
+      FROM (
+        SELECT b.id, count(1) AS total
+        FROM casia a JOIN casia b ON (b.pid = a.pid AND b.fid = a.fid)
+          JOIN casia_d p ON (p.sample = b.id AND p.probe = a.id)
+        WHERE a.id != b.id
+          AND p.score >= 80
+        GROUP BY b.id
+        UNION
+        SELECT b.id, count(1) AS total
+        FROM casia a JOIN casia b ON (b.pid = a.pid AND b.fid = a.fid)
+          JOIN casia_d p ON (p.probe = b.id AND p.sample = a.id)
+        WHERE a.id != b.id
+          AND p.score >= 80
+        GROUP BY b.id
+      ) x
+      GROUP BY x.id
+    ) y
+  ) k ON (l.id = k.id);
+
+-- ====================================================================================================
+
 /*
 Results
 
-DT: score <= 40
-  false_rejection_rate   
--------------------------
- 99.85125000000000000000
+DT = 40
 
-DT: score <= 45
   false_rejection_rate   
 -------------------------
- 99.08000000000000000000
+ 96.89125000000000000000
 
-DT: score <= 50
-  false_rejection_rate   
--------------------------
- 98.38875000000000000000
-
-DT: score <= 60
-  false_rejection_rate   
--------------------------
- 97.20250000000000000000
-
-DT: score <= 80
-  false_rejection_rate   
--------------------------
- 95.58750000000000000000
 */
 

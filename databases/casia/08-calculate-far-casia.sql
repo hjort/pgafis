@@ -101,10 +101,11 @@ FROM (
 
 -- FAR (considering the whole dataset will all N subjects)
 
-SELECT sum(w.false_acceptance_rate_over_n) / (
-  SELECT count(1) FROM casia
-  WHERE id <= 100 -- for debugging purposes
-  ) AS false_acceptance_rate
+SELECT coalesce(
+  sum(w.false_acceptance_rate_over_n) / (
+    SELECT count(1) FROM casia
+    WHERE id <= 100 -- for debugging purposes
+  ), 0.0) AS false_acceptance_rate
 FROM (
   SELECT z.id, z.pid, z.fid,
     z.total_fraud_attempts_against_n, z.total_successful_frauds_against_n,
@@ -142,7 +143,7 @@ FROM (
         FROM casia c
         WHERE c.pid = b.pid AND c.fid = b.fid
       )
-      AND n.id <= 100 -- for debugging purposes
+      --AND n.id <= 100 -- for debugging purposes
       --AND n.id IN (1720, 1464, 492)
     GROUP BY n.id, n.pid, n.fid
   ) z
@@ -151,9 +152,10 @@ FROM (
 
 -- FAR (optimized)
 
-SELECT sum(w.false_acceptance_rate_over_n) /
+SELECT coalesce(
+  sum(w.false_acceptance_rate_over_n) /
   20000 -- N: total number of subjects = 20000
-  AS false_acceptance_rate
+  , 0.0) AS false_acceptance_rate
 FROM (
   SELECT z.id, z.pid, z.fid,
     z.total_fraud_attempts_against_n, z.total_successful_frauds_against_n,
