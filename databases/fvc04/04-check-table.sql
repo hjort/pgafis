@@ -93,18 +93,19 @@ SELECT db,
   pg_size_pretty(trunc(avg(length(mdt)))) AS mdt,
   pg_size_pretty(trunc(avg(length(xyt)))) AS xyt,
   trunc(avg(mins))::int AS mins,
-  trunc(avg(nfiq))::int AS nfiq
+  trunc(avg(nfiq))::int AS nfiq,
+  count(1)
 FROM fvc04
 GROUP BY db
 ORDER BY db;
 
 /*
- db |  tif   |  wsq  |    mdt    |    xyt     | mins | nfiq 
-----+--------+-------+-----------+------------+------+------
-  1 | 301 kB | 32 kB | 436 bytes | 757 bytes  |   54 |    2
-  2 | 117 kB | 31 kB | 411 bytes | 700 bytes  |   51 |    3
-  3 | 141 kB | 30 kB | 732 bytes | 1258 bytes |   91 |    3
-  4 | 109 kB | 26 kB | 473 bytes | 803 bytes  |   58 |    3
+ db |  tif   |  wsq  |    mdt    |    xyt     | mins | nfiq | count 
+----+--------+-------+-----------+------------+------+------+-------
+  1 | 301 kB | 32 kB | 436 bytes | 757 bytes  |   54 |    3 |    80
+  2 | 117 kB | 31 kB | 410 bytes | 699 bytes  |   51 |    4 |    80
+  3 | 141 kB | 30 kB | 732 bytes | 1258 bytes |   91 |    3 |    80
+  4 | 109 kB | 26 kB | 473 bytes | 803 bytes  |   58 |    5 |    80
 (4 rows)
 */
 

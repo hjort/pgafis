@@ -19,6 +19,7 @@ CREATE TABLE $table (
   id serial NOT NULL PRIMARY KEY,
   db int2 NOT NULL,
   fp char(5) NOT NULL,
+  pid int2,
   tif bytea NOT NULL,
   wsq bytea,
   mdt bytea,
@@ -46,9 +47,17 @@ do
 	done
 done
 
+# complementar campos adicionais
+echo "Filling additional identifier fields..."
+echo | $PSQL -q << EOF
+UPDATE $table
+SET pid = split_part(fp, '_', 1)::int2
+EOF
+
 # criar chave única
 echo "Creating unique key..."
 $PSQL -c "ALTER TABLE $table ADD UNIQUE (db, fp)"
+$PSQL -c "CREATE INDEX ON $table (db, pid)"
 
 # WSQ
 echo "Converting TIFF images to WSQ format..."
