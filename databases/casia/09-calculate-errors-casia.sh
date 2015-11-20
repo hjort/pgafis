@@ -13,8 +13,8 @@ for dt in `seq 40 50`
 #for dt in `seq 40 10 80`
 #for dt in 40
 do
-  far=`./09-getsql-far-casia.sh $dt | $PSQL -tA`
-  frr=`./09-getsql-frr-casia.sh $dt | $PSQL -tA`
+  far=`bash 08-getsql-far-casia.sh $dt | $PSQL -tA`
+  frr=`bash 08-getsql-frr-casia.sh $dt | $PSQL -tA`
   echo "DT: $dt -> FAR: $far, FRR: $frr"
 done
 echo
