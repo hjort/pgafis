@@ -19,8 +19,8 @@ do
   #for dt in `seq 40 10 80`
   #for dt in 40
   do
-    far=`./09-getsql-far.sh $db $dt | $PSQL -tA`
-    frr=`./09-getsql-frr.sh $db $dt | $PSQL -tA`
+    far=`bash 08-getsql-far-srcafis.sh $db $dt | $PSQL -tA`
+    frr=`bash 08-getsql-frr-srcafis.sh $db $dt | $PSQL -tA`
     echo "DT: $dt -> FAR: $far, FRR: $frr"
   done
   echo
