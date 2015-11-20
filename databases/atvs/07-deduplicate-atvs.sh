@@ -62,7 +62,7 @@ SELECT c.*
 FROM (
   SELECT a.id AS probe, b.id AS sample,
     bz_match(a.mdt, b.mdt) AS score
-  FROM atvs a, atvs b
+  FROM atvs_m a, atvs_m b
   WHERE a.id BETWEEN $sid AND $eid
     AND a.id % $procs = ${resto}
     AND b.id > a.id

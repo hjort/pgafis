@@ -27,6 +27,9 @@ if [ "$PGUSER" != "" ]; then echo "Considering user: $PGUSER"; fi
 echo "Running script with $procs process(es)"
 inicio=`date`
 
+# decision threshold
+DT=40
+
 # create deduplication table
 echo "Recreating deduplication results table..."
 echo "DROP TABLE IF EXISTS ${table}_d;
@@ -59,12 +62,12 @@ SELECT c.*
 FROM (
   SELECT a.id AS probe, b.id AS sample,
     bz_match(a.mdt, b.mdt) AS score
-  FROM srcafis a, srcafis b
+  FROM srcafis_m a, srcafis_m b
   WHERE a.id BETWEEN $sid AND $eid
     AND a.id % $procs = ${resto}
     AND b.id > a.id
 ) c
-WHERE score >= 40;
+WHERE score >= $DT;
 "
     echo "=> Process $nproc [$sid->$eid]: $sql"
     $PSQL -q -c "$sql" &
