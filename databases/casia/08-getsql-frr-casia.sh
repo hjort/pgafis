@@ -2,8 +2,8 @@
 
 dt="$1"
 
-echo "SELECT sum(coalesce(k.false_rejection_rate_over_n, 1.0)) /
-  (SELECT count(1) FROM casia) * 100 AS false_rejection_rate
+echo "SELECT trunc(sum(coalesce(k.false_rejection_rate_over_n, 1.0)) /
+  (SELECT count(1) FROM casia) * 100, 5) AS false_rejection_rate
 FROM casia l
   LEFT JOIN (
     SELECT y.id, z.total_genuine_attempts_against_n, y.total_genuine_acceptances_over_n,

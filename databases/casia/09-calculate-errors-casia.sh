@@ -9,7 +9,7 @@ if [ "$PGHOST" != "" ]; then echo "Considering host: $PGHOST"; fi
 if [ "$PGUSER" != "" ]; then echo "Considering user: $PGUSER"; fi
 
 echo
-for dt in `seq 40 50`
+for dt in `seq 25 50`
 #for dt in `seq 40 10 80`
 #for dt in 40
 do

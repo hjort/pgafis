@@ -2,7 +2,7 @@
 
 dt="$1"
 
-echo "SELECT coalesce(sum(w.false_acceptance_rate_over_n) / 20000, 0.0) AS false_acceptance_rate
+echo "SELECT trunc(coalesce(sum(w.false_acceptance_rate_over_n) / 20000, 0.0), 5) AS false_acceptance_rate
 FROM (
   SELECT z.id, z.pid, z.fid, z.total_fraud_attempts_against_n, z.total_successful_frauds_against_n,
     z.total_successful_frauds_against_n::numeric / z.total_fraud_attempts_against_n * 100 AS false_acceptance_rate_over_n
