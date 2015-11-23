@@ -28,7 +28,7 @@ echo "Running script with $procs process(es)"
 inicio=`date`
 
 # decision threshold
-DT=25
+DT=15
 
 # create deduplication table
 echo "Recreating deduplication results table..."
