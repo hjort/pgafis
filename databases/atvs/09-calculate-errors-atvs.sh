@@ -12,7 +12,7 @@ echo
 for ds in 1 2
 do
   echo "============= DATASET $ds ============="
-  for dt in `seq 40 50`
+  for dt in `seq 25 40`
   #for dt in `seq 40 10 80`
   #for dt in 40
   do
