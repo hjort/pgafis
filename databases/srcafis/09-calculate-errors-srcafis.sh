@@ -15,7 +15,7 @@ for db in $DBS
 #for db in Neurotech/CM
 do
   echo "=========== $db ==========="
-  for dt in `seq 40 50`
+  for dt in `seq 20 50`
   #for dt in `seq 40 10 80`
   #for dt in 40
   do
