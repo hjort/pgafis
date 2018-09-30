@@ -2,7 +2,8 @@
 
 dbase="afis"
 
-PSQL="/usr/local/pgsql/bin/psql $dbase"
+PSQL="psql $dbase"
+#PSQL="/usr/local/pgsql/bin/psql $dbase"
 
 if [ "$PGHOST" != "" ]; then echo "Considering host: $PGHOST"; fi
 if [ "$PGUSER" != "" ]; then echo "Considering user: $PGUSER"; fi

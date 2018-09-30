@@ -3,7 +3,8 @@
 dbase="afis"
 table="fvc04"
 
-PSQL="/usr/local/pgsql/bin/psql $dbase"
+PSQL="psql $dbase"
+#PSQL="/usr/local/pgsql/bin/psql $dbase"
 
 # check if several arguments were passed
 if [ $# -gt 1 ]
@@ -26,6 +27,9 @@ if [ "$PGUSER" != "" ]; then echo "Considering user: $PGUSER"; fi
 
 echo "Running script with $procs process(es)"
 inicio=`date`
+
+# debug mode
+DEBUG=0 # 0 (disabled) or 1 (enabled)
 
 # decision threshold
 DT=20
@@ -69,7 +73,11 @@ FROM (
 ) c
 WHERE score >= $DT;
 "
-    echo "=> Process $nproc [$sid->$eid]: \$sql"
+    echo "=> Process $nproc (ID in [$sid,$eid] | ID mod $procs = $resto)"
+    if [ $DEBUG -ne 0 ]
+    then
+      echo "$sql"
+    fi
     $PSQL -q -c "$sql" &
   done
   echo -e "[`date`]\n"
