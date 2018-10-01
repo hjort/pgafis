@@ -36,14 +36,13 @@ Indexes:
 
 SELECT (bz_match(a.mdt, b.mdt) >= 40) AS match
 FROM srcafis_m a, srcafis_m b
-WHERE a.id = (SELECT id FROM srcafis WHERE ds = 'FVC2000/DB2_B' AND fp = '109_1')
-  AND b.id = (SELECT id FROM srcafis WHERE ds = 'FVC2000/DB2_B' AND fp = '109_2');
+WHERE a.id = (SELECT id FROM srcafis WHERE ds = 'FVC2002/DB4_B' AND fp = '101_1')
+  AND b.id = (SELECT id FROM srcafis WHERE ds = 'FVC2002/DB4_B' AND fp = '101_2');
 
 -- faster!
 SELECT (bz_match(a.mdt, b.mdt) >= 40) AS match
 FROM srcafis_m a, srcafis_m b
-WHERE a.id = 6
-  AND b.id = 19;
+WHERE a.id = 1648 AND b.id = 1685;
 
 /*
  match 
@@ -54,13 +53,12 @@ WHERE a.id = 6
 
 SELECT bz_match(a.mdt, b.mdt) AS score
 FROM srcafis_m a, srcafis_m b
-WHERE a.id = 6
-  AND b.id = 19;
+WHERE a.id = 1648 AND b.id = 1685;
 
 /*
  score 
 -------
-   151
+    67
 (1 row)
 */
 
@@ -71,7 +69,7 @@ WHERE a.id = 6
 -- returns only first match
 SELECT b.id AS first_matching_sample
 FROM srcafis_m a, srcafis_m b
-WHERE a.id = (SELECT id FROM srcafis WHERE ds = 'FVC2000/DB2_B' AND fp = '109_1')
+WHERE a.id = (SELECT id FROM srcafis WHERE ds = 'FVC2002/DB4_B' AND fp = '101_1')
   AND b.id != a.id
   AND bz_match(a.mdt, b.mdt) >= 40
 LIMIT 1;
@@ -79,14 +77,14 @@ LIMIT 1;
 /*
  first_matching_sample 
 -----------------------
-                   166
+                  1647
 (1 row)
 */
 
 -- faster!
 SELECT b.id AS first_matching_sample
 FROM srcafis_m a, srcafis_m b
-WHERE a.id = 6
+WHERE a.id = 1648
   AND b.id != a.id
   AND bz_match(a.mdt, b.mdt) >= 40
 LIMIT 1;
@@ -94,14 +92,14 @@ LIMIT 1;
 -- returns all matches
 SELECT array_agg(b.id) AS matching_samples
 FROM srcafis_m a, srcafis_m b
-WHERE a.id = 6
+WHERE a.id = 1648
   AND b.id != a.id
   AND bz_match(a.mdt, b.mdt) >= 40;
 
 /*
-          matching_samples          
-------------------------------------
- {166,232,240,19,28,47,69,72,76,80}
+   matching_samples    
+-----------------------
+ {1647,1680,1685,1696}
 (1 row)
 */
 

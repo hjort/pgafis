@@ -3,7 +3,8 @@
 dbase="afis"
 table="srcafis"
 
-PSQL="/usr/local/pgsql/bin/psql $dbase"
+PSQL="psql $dbase"
+#PSQL="/usr/local/pgsql/bin/psql $dbase"
 
 # check if several arguments were passed
 if [ $# -gt 1 ]
